@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+config.env/
+
+.env
+
+config/auth_rsa.key
