@@ -30,7 +30,7 @@ func Registration(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp := database.SignNewClient(*dto)
+	resp := database.SignNewClient(dto)
 	if !resp {
 		statusCode = 400
 	}
@@ -99,7 +99,7 @@ func HandleError(c *fiber.Ctx) error {
 // ##################################################################################
 
 // // SendTelegramMessage - > handle only a telegram notifications sending
-func (dto NotificationRequestDto) SendTelegramMessage() error {
+func (dto *NotificationRequestDto) SendTelegramMessage() error {
 	d := models.SendTwoStepCodeDto{
 		ChatID: dto.Recipient,
 		Code:   dto.Content,
@@ -108,7 +108,7 @@ func (dto NotificationRequestDto) SendTelegramMessage() error {
 }
 
 // SendEmailMessage - > handle only an email notifications sending
-func (dto NotificationRequestDto) SendEmailMessage() error {
+func (dto *NotificationRequestDto) SendEmailMessage() error {
 	d := models.EmailDto{
 		ServiceType: dto.ServiceType,
 		DomainName:  dto.DomainName,
@@ -118,7 +118,7 @@ func (dto NotificationRequestDto) SendEmailMessage() error {
 	return email.PrepareEmailMessage(d)
 }
 
-func (dto NotificationRequestDto) SaveHistory() {
+func (dto *NotificationRequestDto) SaveHistory() {
 	historyItem := models.NotificationHistory{
 		DateTime:    time.Now().Format(time.UnixDate),
 		Recipient:   dto.Recipient,
@@ -126,6 +126,6 @@ func (dto NotificationRequestDto) SaveHistory() {
 		MessageBody: dto.Content,
 		SentVia:     dto.ServiceType,
 	}
-	fmt.Println("hist ->\n", historyItem)
-	database.SaveHistory(historyItem)
+	// fmt.Println("hist ->\n", historyItem)
+	database.SaveHistory(&historyItem)
 }

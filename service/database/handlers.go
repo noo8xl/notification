@@ -28,7 +28,7 @@ func insertData(col string, doc any) string {
 		return id
 	} else {
 		id = fmt.Sprintf("%v", result.InsertedID)
-		fmt.Println("ins ID -> ", id)
+		// fmt.Println("ins ID -> ", id)
 		fmt.Println("Insertion was done successfully.")
 		return id
 	}

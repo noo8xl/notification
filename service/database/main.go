@@ -13,7 +13,7 @@ import (
 // var databaseName [2]string = config.GetMONGOdatabaseConfig() // first elem -> link, second -> name
 
 // SignNewClient -> prepare data and then call insert func to registrate new client
-func SignNewClient(dto models.ClietRegistratioDto) bool {
+func SignNewClient(dto *models.ClietRegistratioDto) bool {
 
 	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
 	if candidate := isDbContains("CompanyList", filter); candidate {
@@ -38,9 +38,9 @@ func SignNewClient(dto models.ClietRegistratioDto) bool {
 }
 
 // GetAccessToken -> get client access token for middleware
-func GetAccessToken(d string) string {
+func GetAccessToken(d *string) *string {
 
-	var result models.CompanyDetails
+	var result *models.CompanyDetails
 	client := connectDb()
 	db := client.Database(databaseName)
 	collection := db.Collection("CompanyDetails")
@@ -52,11 +52,11 @@ func GetAccessToken(d string) string {
 	cursor := collection.FindOne(ctx, filter)
 	cursor.Decode(&result)
 
-	return result.UniqueKey
+	return &result.UniqueKey
 }
 
 // SaveHistory -> save sendet notification details
-func SaveHistory(item models.NotificationHistory) {
+func SaveHistory(item *models.NotificationHistory) {
 	s := insertData("NotificationHistory", item)
 	fmt.Println("NotificationHistory id is => ", s)
 }

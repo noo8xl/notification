@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"notification-api/config"
 
@@ -31,6 +30,6 @@ func connectDb() *mongo.Client {
 	// 	telegram.SendErrorMessage("ping to mongodb was failed")
 	// 	return nil
 	// }
-	fmt.Println("-> You successfully connected to MongoDB <-")
+	// fmt.Println("-> You successfully connected to MongoDB <-")
 	return client
 }

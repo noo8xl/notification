@@ -38,7 +38,7 @@ func authHandler(update *tgbotapi.Update) bool {
 
 	fmt.Println("u ->\n", update)
 
-	var userDto any
+	// var userDto any
 	// userDto.UserID = update.Message.From.ID
 	// userDto.UserEmail = update.Message.PassportData.Data[0].Email
 	// userDto.UserPasswordOrHash = ""
@@ -46,7 +46,7 @@ func authHandler(update *tgbotapi.Update) bool {
 	// userDto.FirstName = update.Message.From.FirstName
 	// userDto.LastName = update.Message.From.LastName
 
-	fmt.Println("cur dto obj is -> ", userDto)
+	// fmt.Println("cur dto obj is -> ", userDto)
 	// send userDto to the client API to sign up new user <-
 	return false
 	// return clientapi.SendSignUpData(userDto)
@@ -68,7 +68,7 @@ func initErrorBot() *tgbotapi.BotAPI {
 	var err error
 	var t string = config.GetErrorHandlerToken()
 
-	fmt.Println("t => ", t)
+	// fmt.Println("t => ", t)
 	bot, err := tgbotapi.NewBotAPI(t)
 	if err != nil {
 		log.Panic(err)

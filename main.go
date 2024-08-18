@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	controller "notification-api/controllers"
-
 	"notification-api/middlewares"
 
 	fiber "github.com/gofiber/fiber/v2"
@@ -55,6 +53,6 @@ func main() {
 	// }()
 
 	// ##################### > start fiber server <- #############################
-	fmt.Println("-> fiber was started.")
+	// fmt.Println("-> fiber was started.")
 	log.Fatal(app.Listen(":7493"))
 }

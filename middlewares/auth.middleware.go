@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// -> right "AccessToken" header should came with request <-*
+// -> correct "AccessToken" header should came with request <-*
 type AccessToken struct {
 	AccessToken string
 }
@@ -29,7 +29,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	var t = new(AccessToken)
 
 	// get company unique access hash str and compare it with received header
-	access := database.GetAccessToken(content.DomainName) // --- >> get hash from db, NOT FROM CONFIG
+	access := database.GetAccessToken(&content.DomainName) // --- >> get hash from db, NOT FROM CONFIG
 	err = c.ReqHeaderParser(t)
 
 	// fmt.Println("headers ojs => /n", t)
@@ -40,7 +40,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 		fmt.Println("auth middleware was failed with error:\n", err.Error())
 		return err
 	} else {
-		if t.AccessToken != access {
+		if t.AccessToken != *access {
 			c.Status(403).JSON(fiber.Map{
 				"Ok":     false,
 				"Reason": "Permission denied",

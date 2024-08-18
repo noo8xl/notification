@@ -23,7 +23,7 @@ func init() {
 	var devChatId string = config.GetDevChatId()
 	var temp, _ = strconv.Atoi(devChatId)
 	errorChatID = int64(temp)
-	fmt.Println("errorChatID ", errorChatID)
+	// fmt.Println("errorChatID ", errorChatID)
 
 	errorBot = initErrorBot()
 	notificationBot = initNotificationBot()
