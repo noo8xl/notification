@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 	"notification-api/helpers"
 	"notification-api/models"
 	"time"
@@ -10,23 +12,23 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// var databaseName [2]string = config.GetMONGOdatabaseConfig() // first elem -> link, second -> name
+// var databaseName [2]string = config.GetMONGDatabaseConfig() // first elem -> link, second -> name
 
-// SignNewClient -> prepare data and then call insert func to registrate new client
-func SignNewClient(dto *models.ClietRegistratioDto) bool {
+// SignNewClient -> prepare data and then call insert func to registration a new client
+func SignNewClient(dto *models.ClientRegistrationDto) bool {
 
 	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
 	if candidate := isDbContains("CompanyList", filter); candidate {
 		fmt.Println("Client already exists.")
 		return false
 	}
-	var clietnId string
+	var clientId string
 	clientDetails := new(models.CompanyDetails)
 	userHashKey := helpers.CreateClientKey(38)
 	doc := models.CompanyList{CompanyDomain: dto.DomainName}
 
-	clietnId = insertData("CompanyList", doc) // ->  save to list and get an id
-	clientDetails.CompanyId = clietnId
+	clientId = insertData("CompanyList", doc) // -> save to list and get an id
+	clientDetails.CompanyId = clientId
 	clientDetails.DomainName = dto.DomainName
 	clientDetails.UserEmail = dto.UserEmail
 	clientDetails.JoinDate = time.Now().Format(time.UnixDate)
@@ -47,15 +49,23 @@ func GetAccessToken(d *string) *string {
 	filter := bson.D{{Key: "domainName", Value: d}}
 	ctx := context.TODO()
 
-	defer client.Disconnect(ctx)
+	defer func(client *mongo.Client, ctx context.Context) {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			log.Printf("Disconnect db catch an error %s\n", err.Error())
+		}
+	}(client, ctx)
 
 	cursor := collection.FindOne(ctx, filter)
-	cursor.Decode(&result)
+	err := cursor.Decode(&result)
+	if err != nil {
+		return nil
+	}
 
 	return &result.UniqueKey
 }
 
-// SaveHistory -> save sendet notification details
+// SaveHistory -> save notification details
 func SaveHistory(item *models.NotificationHistory) {
 	s := insertData("NotificationHistory", item)
 	fmt.Println("NotificationHistory id is => ", s)

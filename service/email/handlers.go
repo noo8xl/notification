@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"notification-api/service/telegram"
 
-	gomail "gopkg.in/gomail.v2"
+	"gopkg.in/gomail.v2"
 )
 
 // sendMessageViaEmail -> Send the email
@@ -49,7 +49,7 @@ func sendMessageViaEmail(msg *gomail.Message) error {
 // 			"plaintext": `Hello, ${userName}`,
 // 			"amp": "<!doctype html><html amp4email><head> <meta charset=\"utf-8\"><script async src=\"https://cdn.ampproject.org/v0.js\"></script> <style amp4email-boilerplate>body{visibility:hidden}</style></head><body> Hello, AMP4EMAIL world.</body></html>"
 // 		},
-// 		"subject": "Email verification",
+// 		"subject": "email verification",
 // 		// "from_email": fromEmail,
 // 		"from_email": DOMAIN_TEST,
 // 		"from_name": "no-reply",

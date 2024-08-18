@@ -1,7 +1,7 @@
 package lettershtmlcontent
 
-// GetActivationLetter -> get html letter as string to send
-// via email for activate account
+// GetActivationLetter -> get an HTML letter as a string to send
+// via email for an activated account
 func GetActivationLetter(code string) string {
 	str := ""
 	return str

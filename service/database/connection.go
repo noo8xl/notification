@@ -10,10 +10,10 @@ import (
 )
 
 // databaseName -> available in <database> package
-var dbConfigs [2]string = config.GetMONGOdatabaseConfig() // first item -> link, second -> name
+var dbConfigs = config.GetMONGOdatabaseConfig() // first item -> link, second -> name
 var databaseName = dbConfigs[1]
 
-// connectDb -> is connector to mongodb database with required params
+// connectDb -> is a connector to a mongodb database with required params
 func connectDb() *mongo.Client {
 
 	ctx := context.Background()

@@ -13,8 +13,8 @@ type TelegramAuthConfig struct {
 	Key   string
 }
 
-// ClietRegistratioDto -> signup a new API client obj
-type ClietRegistratioDto struct {
-	UserEmail  string `json:"userEmail"`  // cliet email
+// ClientRegistrationDto -> signup a new API client obj
+type ClientRegistrationDto struct {
+	UserEmail  string `json:"userEmail"`  // client email
 	DomainName string `json:"domainName"` // name of client domain
 }

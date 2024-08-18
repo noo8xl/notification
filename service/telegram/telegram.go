@@ -17,7 +17,7 @@ var errorChatID int64
 var notificationBot *tgbotapi.BotAPI
 var errorBot *tgbotapi.BotAPI
 
-// init -> init bot here and set some vatiables
+// init -> init bot here and set some variables
 func init() {
 
 	var devChatId string = config.GetDevChatId()
@@ -29,7 +29,7 @@ func init() {
 	notificationBot = initNotificationBot()
 }
 
-// SendTwoStepCode -> send two step code message to current chatId
+// SendTwoStepCode -> send a two-step code message to current chatId
 func SendTwoStepCode(dto models.SendTwoStepCodeDto) error {
 	fmt.Println("dto is -> ", dto.ChatID, dto.Code)
 
@@ -40,7 +40,7 @@ func SendTwoStepCode(dto models.SendTwoStepCodeDto) error {
 	ctx := strings.Join([]string{
 		"Your new auth code is ",
 		"< ", dto.Code, " >",
-		". This code is avaliable only few minutes."}, "")
+		". This code is available only few minutes."}, "")
 
 	msg := tgbotapi.NewMessage(chatID, ctx)
 
@@ -52,16 +52,20 @@ func SendTwoStepCode(dto models.SendTwoStepCodeDto) error {
 	return err
 }
 
-// SendErrorMessage -> send message to current chatID (to developer)
+// SendErrorMessage -> send a message to the current chatID (to a developer)
 func SendErrorMessage(ctx string) {
 	msg := tgbotapi.NewMessage(errorChatID, ctx)
-	errorBot.Send(msg)
+	_, err := errorBot.Send(msg)
+	if err != nil {
+		fmt.Println("Send message was failed.")
+		return
+	}
 }
 
 func InitAuthBot() *tgbotapi.BotAPI {
 	var err error
-	var conf models.TelegramAuthConfig = config.GetTelegramConfig()
-	// fmt.Println("conf is ->\n", conf)
+	var conf = config.GetTelegramConfig()
+	//fmt.Println("conf is ->\n", conf)
 
 	bot, err := tgbotapi.NewBotAPI(conf.Token)
 	if err != nil {
@@ -75,7 +79,7 @@ func InitAuthBot() *tgbotapi.BotAPI {
 }
 
 // HandleUpdates -> waiting for update with telegram passport data (telegram-passport auth)
-// and send data to the setted API url with an <accessKey> header
+// and send data to the set API URL with an <accessKey> header
 func HandleUpdates(update tgbotapi.Update, bt *tgbotapi.BotAPI) {
 	// fmt.Println("current update item -> \n", update)
 
@@ -103,7 +107,6 @@ func HandleUpdates(update tgbotapi.Update, bt *tgbotapi.BotAPI) {
 					return
 				} else {
 					// send 2fa bot link and w8 for the 2fa code in auth bot
-					//
 					return
 				}
 			} else {

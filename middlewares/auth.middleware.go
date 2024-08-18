@@ -8,12 +8,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// -> correct "AccessToken" header should came with request <-*
+// AccessToken -> correct "AccessToken" header should come with a request <-*
 type AccessToken struct {
 	AccessToken string
 }
 
-// AuthMiddleware -> compare received access token with user key in database
+// AuthMiddleware -> compare received access token with a user key in a database
 func AuthMiddleware(c *fiber.Ctx) error {
 
 	var err error
@@ -28,7 +28,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 
 	var t = new(AccessToken)
 
-	// get company unique access hash str and compare it with received header
+	// get a company unique access hash str and compare it with the received header
 	access := database.GetAccessToken(&content.DomainName) // --- >> get hash from db, NOT FROM CONFIG
 	err = c.ReqHeaderParser(t)
 

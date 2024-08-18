@@ -20,14 +20,14 @@ import (
 // and telegram messages
 // <-
 
-// api/v2 - > will provides another types of notifications
+// api/v2 - > will provide another type of notifications
 
 func main() {
 
 	// ######################### -> init fiber <- ################################
 	app := fiber.New()
 	app.Use(recover.New())
-	// AuthMiddleware -> check client access key
+	// AuthMiddleware -> check a client access key
 	app.Use("/api/v1/", middlewares.AuthMiddleware)
 
 	// ###################### -> routes list <- ##################################

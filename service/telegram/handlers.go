@@ -17,7 +17,11 @@ func startMessageHandler(dto *models.CommandsDto) {
 		"Hi, ", dto.UserName, "! ",
 		"Welcome to AuthBot!", "should add some text <-"}, "")
 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
-	dto.Bot.Send(msg)
+	_, err := dto.Bot.Send(msg)
+	if err != nil {
+		fmt.Println("Send message was failed.")
+		return
+	}
 }
 
 // helpMessageHandler -> handle only </help> user message
@@ -30,7 +34,11 @@ func helpMessageHandler(dto *models.CommandsDto) {
 
 	txt := strings.Join([]string{greetings, addArea, editArea, lessonArea}, "\n")
 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
-	dto.Bot.Send(msg)
+	_, err := dto.Bot.Send(msg)
+	if err != nil {
+		fmt.Println("Send message was failed.")
+		return
+	}
 }
 
 // authHandler -> handle auth messages from <sign in via telegram>
@@ -56,14 +64,18 @@ func authHandler(update *tgbotapi.Update) bool {
 func defaultMessageHandler(chatId int64, bt *tgbotapi.BotAPI) {
 	txt := "AuthBot is only for the auth and don't handle any user messages. If you have some questions please contact support via profile->support!"
 	msg := tgbotapi.NewMessage(chatId, txt)
-	bt.Send(msg)
+	_, err := bt.Send(msg)
+	if err != nil {
+		fmt.Println("Send message was failed.")
+		return
+	}
 }
 
 // #######################################################################
 // ###################### -> connect area <- #############################
 // #######################################################################
 
-// initErrorBot -> init tg bot for send ERRORs
+// initErrorBot -> init tg bot for send ERRORRs
 func initErrorBot() *tgbotapi.BotAPI {
 	var err error
 	var t string = config.GetErrorHandlerToken()

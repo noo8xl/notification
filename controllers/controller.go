@@ -16,12 +16,12 @@ import (
 
 // ===============================
 
-// Registration -> sign new client
+// Registration -> sign a new client
 func Registration(c *fiber.Ctx) error {
-	// generate an unique hash str by dto
+	// generate a unique hash str by dto
 	var err error
 	var statusCode int = 201
-	dto := new(models.ClietRegistratioDto)
+	dto := new(models.ClientRegistrationDto)
 
 	err = c.BodyParser(dto)
 	if err != nil {
@@ -45,13 +45,13 @@ func ConfirmSignUp(c *fiber.Ctx) error {
 	return nil
 }
 
-// RenewAuthKey -> generate new client auth key and send it via email
+// RenewAuthKey -> generate a new client auth key and send it via email
 func RenewAuthKey(c *fiber.Ctx) error {
 	// date, email
 	return nil
 }
 
-// SendMessage -> handle a request from the API and send notification via chosen service
+// SendMessage -> handle a request from the API and send a notification via chosen service
 func SendMessage(c *fiber.Ctx) error {
 	var err error
 	var status int = 200
@@ -98,7 +98,7 @@ func HandleError(c *fiber.Ctx) error {
 // ##################################################################################
 // ##################################################################################
 
-// // SendTelegramMessage - > handle only a telegram notifications sending
+// SendTelegramMessage -> handle only a telegram notification sending
 func (dto *NotificationRequestDto) SendTelegramMessage() error {
 	d := models.SendTwoStepCodeDto{
 		ChatID: dto.Recipient,
@@ -107,7 +107,7 @@ func (dto *NotificationRequestDto) SendTelegramMessage() error {
 	return telegram.SendTwoStepCode(d)
 }
 
-// SendEmailMessage - > handle only an email notifications sending
+// SendEmailMessage - > handle only an email notification sending
 func (dto *NotificationRequestDto) SendEmailMessage() error {
 	d := models.EmailDto{
 		ServiceType: dto.ServiceType,

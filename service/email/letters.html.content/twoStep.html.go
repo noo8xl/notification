@@ -6,8 +6,8 @@ import (
 
 // ############################### internal handlers are below the letter func ###################################
 
-// GetwoFactorCodeLetter -> get html letter as string
-// to send 2 step auth code in it
+// GeTwoFactorCodeLetter -> get an HTML letter as string
+// to send 2 steps auth code in it
 func GeTwoFactorCodeLetter(code string) string {
 
 	str := `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

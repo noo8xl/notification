@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -20,7 +22,12 @@ func insertData(col string, doc any) string {
 	ctx := context.TODO()
 	collection := db.Collection(col)
 
-	defer client.Disconnect(ctx)
+	defer func(client *mongo.Client, ctx context.Context) {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			log.Printf("Disconnect db catch an error %s\n", err.Error())
+		}
+	}(client, ctx)
 
 	result, err := collection.InsertOne(ctx, &doc)
 	if err != nil {
@@ -28,7 +35,7 @@ func insertData(col string, doc any) string {
 		return id
 	} else {
 		id = fmt.Sprintf("%v", result.InsertedID)
-		// fmt.Println("ins ID -> ", id)
+		//fmt.Println("ins ID -> ", id)
 		fmt.Println("Insertion was done successfully.")
 		return id
 	}
@@ -48,7 +55,12 @@ func isDbContains(col string, filter primitive.D) bool {
 	db := client.Database(databaseName)
 	collection := db.Collection(col)
 
-	defer client.Disconnect(ctx)
+	defer func(client *mongo.Client, ctx context.Context) {
+		err := client.Disconnect(ctx)
+		if err != nil {
+			log.Printf("Disconnect db catch an error %s\n", err.Error())
+		}
+	}(client, ctx)
 
 	if err := collection.FindOne(ctx, filter).Decode(&result); err != nil {
 		fmt.Println(err)
