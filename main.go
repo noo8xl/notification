@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	controller "notification-api/controllers"
-	"notification-api/middlewares"
 
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -28,7 +27,7 @@ func main() {
 	app := fiber.New()
 	app.Use(recover.New())
 	// AuthMiddleware -> check a client access key
-	app.Use("/api/v1/", middlewares.AuthMiddleware)
+	// app.Use("/api/v1/", middlewares.AuthMiddleware)
 
 	// ###################### -> routes list <- ##################################
 

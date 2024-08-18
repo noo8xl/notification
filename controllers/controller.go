@@ -30,7 +30,7 @@ func Registration(c *fiber.Ctx) error {
 		return err
 	}
 
-	resp := database.SignNewClient(dto)
+	resp := database.SignNewClient(*dto)
 	if !resp {
 		statusCode = 400
 	}
@@ -58,12 +58,14 @@ func SendMessage(c *fiber.Ctx) error {
 	dto := new(NotificationRequestDto)
 
 	err = c.BodyParser(dto)
+	fmt.Println("dto is ->\n", dto)
 	if err != nil {
 		fmt.Println("SendMessage requestDto parser failed with error:\n", err)
 		c.Status(500)
 		return err
 	}
-	// fmt.Println("dto is ->\n", dto)
+
+	fmt.Println("dto is ->\n", dto)
 
 	switch dto.ServiceType {
 	case "telegram":
@@ -99,7 +101,7 @@ func HandleError(c *fiber.Ctx) error {
 // ##################################################################################
 
 // SendTelegramMessage -> handle only a telegram notification sending
-func (dto *NotificationRequestDto) SendTelegramMessage() error {
+func (dto NotificationRequestDto) SendTelegramMessage() error {
 	d := models.SendTwoStepCodeDto{
 		ChatID: dto.Recipient,
 		Code:   dto.Content,
@@ -108,7 +110,7 @@ func (dto *NotificationRequestDto) SendTelegramMessage() error {
 }
 
 // SendEmailMessage - > handle only an email notification sending
-func (dto *NotificationRequestDto) SendEmailMessage() error {
+func (dto NotificationRequestDto) SendEmailMessage() error {
 	d := models.EmailDto{
 		ServiceType: dto.ServiceType,
 		DomainName:  dto.DomainName,
@@ -118,7 +120,7 @@ func (dto *NotificationRequestDto) SendEmailMessage() error {
 	return email.PrepareEmailMessage(d)
 }
 
-func (dto *NotificationRequestDto) SaveHistory() {
+func (dto NotificationRequestDto) SaveHistory() {
 	historyItem := models.NotificationHistory{
 		DateTime:    time.Now().Format(time.UnixDate),
 		Recipient:   dto.Recipient,
@@ -127,5 +129,5 @@ func (dto *NotificationRequestDto) SaveHistory() {
 		SentVia:     dto.ServiceType,
 	}
 	// fmt.Println("hist ->\n", historyItem)
-	database.SaveHistory(&historyItem)
+	database.SaveHistory(historyItem)
 }

@@ -3,11 +3,12 @@ package database
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"notification-api/helpers"
 	"notification-api/models"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -15,7 +16,7 @@ import (
 // var databaseName [2]string = config.GetMONGDatabaseConfig() // first elem -> link, second -> name
 
 // SignNewClient -> prepare data and then call insert func to registration a new client
-func SignNewClient(dto *models.ClientRegistrationDto) bool {
+func SignNewClient(dto models.ClientRegistrationDto) bool {
 
 	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
 	if candidate := isDbContains("CompanyList", filter); candidate {
@@ -40,9 +41,9 @@ func SignNewClient(dto *models.ClientRegistrationDto) bool {
 }
 
 // GetAccessToken -> get client access token for middleware
-func GetAccessToken(d *string) *string {
+func GetAccessToken(d string) string {
 
-	var result *models.CompanyDetails
+	var result models.CompanyDetails
 	client := connectDb()
 	db := client.Database(databaseName)
 	collection := db.Collection("CompanyDetails")
@@ -59,14 +60,14 @@ func GetAccessToken(d *string) *string {
 	cursor := collection.FindOne(ctx, filter)
 	err := cursor.Decode(&result)
 	if err != nil {
-		return nil
+		return ""
 	}
 
-	return &result.UniqueKey
+	return result.UniqueKey
 }
 
 // SaveHistory -> save notification details
-func SaveHistory(item *models.NotificationHistory) {
+func SaveHistory(item models.NotificationHistory) {
 	s := insertData("NotificationHistory", item)
 	fmt.Println("NotificationHistory id is => ", s)
 }
