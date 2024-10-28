@@ -1,10 +1,10 @@
 package email
 
 import (
-  "fmt"
-  "notification-api/service/telegram"
+	"fmt"
+	"notification-api/service/telegram"
 
-  "gopkg.in/gomail.v2"
+	"gopkg.in/gomail.v2"
 )
 
 // sendMessageViaEmail -> Send the email

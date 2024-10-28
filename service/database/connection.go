@@ -2,34 +2,31 @@ package database
 
 import (
 	"context"
-	"log"
 	"notification-api/config"
+	"notification-api/excepriton"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// databaseName -> available in <database> package
-var dbConfigs = config.GetMONGOdatabaseConfig() // first item -> link, second -> name
-var databaseName = dbConfigs[1]
+type database struct {
+	db   *mongo.Client
+	name string
+}
 
 // connectDb -> is a connector to a mongodb database with required params
-func connectDb() *mongo.Client {
+func initDatabaseConnection() (*database, error) {
 
 	ctx := context.Background()
-	mongoPath := dbConfigs[0]
-	// dbName := dbConfigs[1] // to use in db ping func <-
-	clientOptions := options.Client().ApplyURI(mongoPath)
+	configs := config.GetMONGOdatabaseConfig()
+	uri := strings.Join([]string{"mongodb+srv://", configs.User, ":", configs.Password, "@cluster001.sipjs.mongodb.net/?retryWrites=true&w=majority"}, "")
+	clientOptions := options.Client().ApplyURI(uri)
 
-	client, err := mongo.Connect(ctx, clientOptions)
+	db, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatal(err)
+		excepriton.HandleAnError("db connection got an err: ", err)
+		return nil, err
 	}
-	// // Send a ping to confirm a successful connection
-	// if err := client.Database(dbName).RunCommand(ctx, bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
-	// 	telegram.SendErrorMessage("ping to mongodb was failed")
-	// 	return nil
-	// }
-	// fmt.Println("-> You successfully connected to MongoDB <-")
-	return client
+	return &database{db: db, name: configs.Name}, nil
 }

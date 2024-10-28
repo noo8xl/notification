@@ -2,72 +2,126 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"notification-api/excepriton"
 	"notification-api/helpers"
 	"notification-api/models"
 	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// var databaseName [2]string = config.GetMONGDatabaseConfig() // first elem -> link, second -> name
+// SignNewClient -> prepare and save registration data of a new client
+func SignNewClient(dto *models.ClientRegistrationDto) error {
 
-// SignNewClient -> prepare data and then call insert func to registration a new client
-func SignNewClient(dto models.ClientRegistrationDto) bool {
-
-	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
-	if candidate := isDbContains("CompanyList", filter); candidate {
-		fmt.Println("Client already exists.")
-		return false
-	}
 	var clientId string
+	candidate := new(models.CompanyList)
 	clientDetails := new(models.CompanyDetails)
-	userHashKey := helpers.CreateClientKey(38)
+	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
 	doc := models.CompanyList{CompanyDomain: dto.DomainName}
 
-	clientId = insertData("CompanyList", doc) // -> save to list and get an id
+	userHashKey := helpers.CreateClientKey(38)
+	ctx := context.TODO()
+	client, err := initDatabaseConnection()
+	if err != nil {
+		return err
+	}
+
+	db := client.db.Database(client.name)
+	baseCollection := db.Collection("CompanyList")
+	detailsCollection := db.Collection("CompanyDetails")
+	defer client.db.Disconnect(ctx)
+
+	cand := baseCollection.FindOne(ctx, filter)
+	if cand != nil {
+		cand.Decode(&candidate)
+	}
+
+	// if err := baseCollection.FindOne(ctx, filter).Decode(&candidate); err != nil {
+	// 	excepriton.HandleAnError("db find error: ", err)
+	// 	return err
+	// }
+
+	log.Println("cand -> ", candidate.CompanyDomain)
+
+	if candidate.CompanyDomain != "" {
+		return errors.New("user already exists")
+	}
+
+	result, err := baseCollection.InsertOne(ctx, &doc)
+	if err != nil {
+		excepriton.HandleAnError("db insertion err: ", err)
+		return err
+	}
+
+	clientId = fmt.Sprintf("%v", result.InsertedID)
 	clientDetails.CompanyId = clientId
 	clientDetails.DomainName = dto.DomainName
 	clientDetails.UserEmail = dto.UserEmail
 	clientDetails.JoinDate = time.Now().Format(time.UnixDate)
 	clientDetails.UniqueKey = userHashKey
 
-	s := insertData("CompanyDetails", clientDetails)
-	fmt.Println("details id is => ", s)
-	return true
+	result, err = detailsCollection.InsertOne(ctx, &clientDetails)
+	if err != nil {
+		excepriton.HandleAnError("db insertion err: ", err)
+		return err
+	}
+	return nil
 }
 
 // GetAccessToken -> get client access token for middleware
-func GetAccessToken(d string) string {
+func GetAccessToken(d string) (string, error) {
 
-	var result models.CompanyDetails
-	client := connectDb()
-	db := client.Database(databaseName)
+	var result *models.CompanyDetails
+	client, err := initDatabaseConnection()
+	if err != nil {
+		return "", err
+	}
+	db := client.db.Database(client.name)
 	collection := db.Collection("CompanyDetails")
 	filter := bson.D{{Key: "domainName", Value: d}}
 	ctx := context.TODO()
+	defer client.db.Disconnect(ctx)
 
-	defer func(client *mongo.Client, ctx context.Context) {
-		err := client.Disconnect(ctx)
-		if err != nil {
-			log.Printf("Disconnect db catch an error %s\n", err.Error())
-		}
-	}(client, ctx)
-
-	cursor := collection.FindOne(ctx, filter)
-	err := cursor.Decode(&result)
+	err = collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
-		return ""
+		if err == mongo.ErrNoDocuments {
+			excepriton.HandleAnError("Not found err: ", err)
+			return "", err
+		}
+		excepriton.HandleAnError("GetAccessToken func err: ", err)
+		return "", err
 	}
 
-	return result.UniqueKey
+	return result.UniqueKey, nil
 }
 
 // SaveHistory -> save notification details
-func SaveHistory(item models.NotificationHistory) {
-	s := insertData("NotificationHistory", item)
-	fmt.Println("NotificationHistory id is => ", s)
+func SaveToTheHistory(item *models.NotificationHistory) error {
+
+	client, err := initDatabaseConnection()
+	if err != nil {
+		return err
+	}
+
+	db := client.db.Database(client.name)
+	collection := db.Collection("CompanyDetails")
+	ctx := context.TODO()
+	defer client.db.Disconnect(ctx)
+
+	_, err = collection.InsertOne(ctx, &item)
+	if err != nil {
+		excepriton.HandleAnError("save notification history was failed: ", err)
+		return err
+	}
+	return nil
+}
+
+// GetNotificationHistotyList -> get a list of notifications
+func GetNotificationHistotyList(skip int, limit int, recepient string) ([]*models.NotificationHistory, error) {
+
+	return nil, nil
 }

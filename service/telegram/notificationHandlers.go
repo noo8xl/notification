@@ -27,12 +27,12 @@ func startMessageHandler(dto *models.CommandsDto) {
 // helpMessageHandler -> handle only </help> user message
 func helpMessageHandler(dto *models.CommandsDto) {
 
-	greetings := "Let's start to teach you how to interact with me!"
-	addArea := "_"
-	editArea := "_"
-	lessonArea := "_ will update soon"
+	greetings := "Let's start to teach you how to interact with me!\n"
+	info1 := "_"
+	info2 := "_"
+	info3 := "_ will update soon"
 
-	txt := strings.Join([]string{greetings, addArea, editArea, lessonArea}, "\n")
+	txt := strings.Join([]string{greetings, info1, info2, info3}, "\n")
 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
 	_, err := dto.Bot.Send(msg)
 	if err != nil {
@@ -41,39 +41,9 @@ func helpMessageHandler(dto *models.CommandsDto) {
 	}
 }
 
-// authHandler -> handle auth messages from <sign in via telegram>
-func authHandler(update *tgbotapi.Update) bool {
-
-	fmt.Println("u ->\n", update)
-
-	// var userDto any
-	// userDto.UserID = update.Message.From.ID
-	// userDto.UserEmail = update.Message.PassportData.Data[0].Email
-	// userDto.UserPasswordOrHash = ""
-	// userDto.UserName = update.Message.From.UserName
-	// userDto.FirstName = update.Message.From.FirstName
-	// userDto.LastName = update.Message.From.LastName
-
-	// fmt.Println("cur dto obj is -> ", userDto)
-	// send userDto to the client API to sign up new user <-
-	return false
-	// return clientapi.SendSignUpData(userDto)
-}
-
-// defaultMessageHandler -> send default message to unknown message
-func defaultMessageHandler(chatId int64, bt *tgbotapi.BotAPI) {
-	txt := "AuthBot is only for the auth and don't handle any user messages. If you have some questions please contact support via profile->support!"
-	msg := tgbotapi.NewMessage(chatId, txt)
-	_, err := bt.Send(msg)
-	if err != nil {
-		fmt.Println("Send message was failed.")
-		return
-	}
-}
-
-// #######################################################################
-// ###################### -> connect area <- #############################
-// #######################################################################
+// ##########################################################################
+// ###################### -> connection area <- #############################
+// ##########################################################################
 
 // initErrorBot -> init tg bot for send ERRORRs
 func initErrorBot() *tgbotapi.BotAPI {

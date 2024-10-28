@@ -1,13 +1,12 @@
 package controller
 
 import (
-	"fmt"
 	"net/url"
+	"notification-api/excepriton"
 	"notification-api/models"
 	"notification-api/service/database"
-	"notification-api/service/email"
 	"notification-api/service/telegram"
-	"time"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,26 +18,33 @@ import (
 
 // Registration -> sign a new client
 func Registration(c *fiber.Ctx) error {
-	// generate a unique hash str by dto
-	var err error
-	var statusCode int = 201
+
 	dto := new(models.ClientRegistrationDto)
 
-	err = c.BodyParser(dto)
+	err := c.BodyParser(&dto)
 	if err != nil {
-		fmt.Println("Registration requestDto parser failed with error:\n", err)
+		excepriton.HandleAnError("Registration requestDto parser failed with error:", err)
 		c.Status(500)
 		return err
 	}
 
-	resp := database.SignNewClient(*dto)
-	if !resp {
-		statusCode = 400
+	err = database.SignNewClient(dto)
+	if err != nil {
+		if err.Error() == "user already exists" {
+			c.Status(400).JSON(fiber.Map{
+				"Ok":      false,
+				"Message": err.Error(),
+			})
+			return nil
+		} else {
+			c.Status(417)
+		}
 	}
-	// send email with auth hash here ?*
 
-	c.Status(statusCode)
-	return err
+	// send email with auth hash here ?*
+	// or in service
+	c.Status(201)
+	return nil
 }
 
 // ConfirmSignUp -> confirm registration via client email
@@ -55,88 +61,89 @@ func RenewAuthKey(c *fiber.Ctx) error {
 // SendMessage -> handle a request from the API and send a notification via chosen service
 func SendMessage(c *fiber.Ctx) error {
 	var err error
-	var status int = 200
 	dto := new(NotificationRequestDto)
 
 	err = c.BodyParser(dto)
-	fmt.Println("dto is ->\n", dto)
 	if err != nil {
-		fmt.Println("SendMessage requestDto parser failed with error:\n", err.Error())
-		c.Status(500)
+		excepriton.HandleAnError("SendMessage bodyparser got an error: ", err)
+		c.Status(417)
 		return err
 	}
-
-	fmt.Println("dto is ->\n", dto)
 
 	switch dto.ServiceType {
 	case "telegram":
 		err = dto.SendTelegramMessage()
+		if err != nil {
+			c.Status(417)
+			return err
+		}
 	case "email":
 		err = dto.SendEmailMessage()
+		if err != nil {
+			c.Status(417)
+			return err
+		}
+	// case "slack":
+	// 	err = dto.SendEmailMessage()
+	// 	if err != nil {
+	// 	c.Status(417)
+	// 	return err
+	// }
 	default:
-		fmt.Println("Received wrong service type.")
-		status = 400
-	}
-
-	if err != nil {
-		status = 500
-	}
-
-	dto.SaveHistory()
-	c.Status(status)
-	return err
-}
-
-// HandleError -> handle all critical project errors and send msg to developer
-func HandleError(c *fiber.Ctx) error {
-
-	ctx := c.AllParams()["msg"]
-
-	decodedMsg, err := url.QueryUnescape(ctx)
-	if err != nil {
-		fmt.Println("Error decoding URL:", err)
+		excepriton.HandleAnError("Received wrong service type.", err)
 		c.Status(400)
 		return err
 	}
 
-	telegram.SendErrorMessage(decodedMsg)
+	err = dto.SaveToTheHistory()
+	if err != nil {
+		c.Status(417)
+		return err
+	}
 
 	c.Status(200)
 	return nil
 }
 
-// ##################################################################################
-// ##################################################################################
-// ##################################################################################
+// HandleError -> handle all critical project errors and send msg to developer
+func HandleError(c *fiber.Ctx) error {
+	ctx := c.AllParams()["msg"]
 
-// SendTelegramMessage -> handle only a telegram notification sending
-func (dto NotificationRequestDto) SendTelegramMessage() error {
-	d := models.SendTwoStepCodeDto{
-		ChatID:  dto.Recipient,
-		Message: dto.Content,
+	decodedMsg, err := url.QueryUnescape(ctx)
+	if err != nil {
+		excepriton.HandleAnError("Error decoding URL:", err)
+		c.Status(417)
+		return err
 	}
-	return telegram.SendUserMessage(d)
+
+	err = telegram.SendErrorMessage(decodedMsg)
+	if err != nil {
+		c.Status(417)
+		return err
+	}
+
+	c.Status(200)
+	return nil
 }
 
-// SendEmailMessage - > handle only an email notification sending
-func (dto NotificationRequestDto) SendEmailMessage() error {
-	d := models.EmailDto{
-		ServiceType: dto.ServiceType,
-		DomainName:  dto.DomainName,
-		Content:     dto.Content,
-		Recipient:   dto.Recipient,
-	}
-	return email.PrepareEmailMessage(d)
-}
+// HandleError -> handle all critical project errors and send msg to developer
+func GetHistoryList(c *fiber.Ctx) error {
+	params := c.AllParams()
 
-func (dto NotificationRequestDto) SaveHistory() {
-	historyItem := models.NotificationHistory{
-		DateTime:    time.Now().Format(time.UnixDate),
-		Recipient:   dto.Recipient,
-		DomainName:  dto.DomainName,
-		MessageBody: dto.Content,
-		SentVia:     dto.ServiceType,
+	skip, _ := strconv.Atoi(params["skip"])
+	lim, _ := strconv.Atoi(params["limit"])
+	recipient := params["recipient"]
+
+	list, err := database.GetNotificationHistotyList(skip, lim, recipient)
+	if err != nil {
+		c.Status(417)
+		return err
 	}
-	// fmt.Println("hist ->\n", historyItem)
-	database.SaveHistory(historyItem)
+
+	c.Status(200).JSON(fiber.Map{
+		"Ok":   true,
+		"List": list,
+	})
+	return nil
+
 }

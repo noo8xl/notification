@@ -31,3 +31,5 @@ config/config.build.go
 notification-server
 
 .idea/
+
+env

@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	controller "notification-api/controllers"
+	"notification-api/excepriton"
 	"notification-api/service/database"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,38 +18,41 @@ type AccessToken struct {
 func AuthMiddleware(c *fiber.Ctx) error {
 
 	var err error
+	var t = new(AccessToken)
 	var content *controller.NotificationRequestDto // <- the main request type for calling /api/v1/
 
 	err = c.BodyParser(&content)
 	if err != nil {
-		fmt.Println("requestDto parser failed with error:\n", err)
+		excepriton.HandleAnError("requestDto parser failed with error:", err)
 		c.Status(500)
 		return err
 	}
 
-	var t = new(AccessToken)
-
 	// get a company unique access hash str and compare it with the received header
-	access := database.GetAccessToken(content.DomainName) // --- >> get hash from db, NOT FROM CONFIG
+	access, err := database.GetAccessToken(content.DomainName)
+	if err != nil {
+		return err
+	}
 	err = c.ReqHeaderParser(t)
+	if err != nil {
+		excepriton.HandleAnError("request header parsing err: ", err)
+		c.Status(417)
+		return err
+	}
 
 	// fmt.Println("headers ojs => /n", t)
 	// fmt.Println("access str is  => ", access)
 	// fmt.Println("retrieved header is => ", t.AccessToken)
 
-	if err != nil {
-		fmt.Println("auth middleware was failed with error:\n", err.Error())
-		return err
-	} else {
-		if t.AccessToken != access {
-			c.Status(403).JSON(fiber.Map{
-				"Ok":     false,
-				"Reason": "Permission denied",
-			})
-			fmt.Println("wrong auth token from ", content.DomainName)
-			return nil
-		} else {
-			return c.Next()
-		}
+	if t.AccessToken != access {
+		c.Status(403).JSON(fiber.Map{
+			"Ok":     false,
+			"Reason": "Permission denied",
+		})
+
+		fmt.Println("got a wrong auth token from ", content.DomainName)
+		return nil
 	}
+
+	return c.Next()
 }

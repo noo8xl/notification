@@ -79,18 +79,18 @@ package config
 // 	return os.Getenv(key)
 // }
 
-// // func ClientApiAuth() string {
-// // 	var apiUrl string = clientAPIUrl()
-// // 	var signInPath string = "/auth/passport-telegram/"
-// // 	var requestStr string = strings.Join([]string{apiUrl, signInPath}, "")
+// func ClientApiAuth() string {
+// 	var apiUrl string = clientAPIUrl()
+// 	var signInPath string = "/auth/passport-telegram/"
+// 	var requestStr string = strings.Join([]string{apiUrl, signInPath}, "")
 
-// // 	fmt.Println("request str -> ", requestStr)
-// // 	return requestStr
-// // }
+// 	fmt.Println("request str -> ", requestStr)
+// 	return requestStr
+// }
 
 // // ####################################################################################
 
-// // func clientAPIUrl() string {
-// // 	return "http://127.0.0.1:35891"
-// // 	// return "https://127.0.0.1:35891"
-// // }
+// func clientAPIUrl() string {
+// 	return "http://127.0.0.1:35891"
+// 	// return "https://127.0.0.1:35891"
+// }

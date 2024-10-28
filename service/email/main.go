@@ -9,7 +9,7 @@ import (
 )
 
 // PrepareEmailMessage -> set email opts and then call sendMessageViaEmail func
-func PrepareEmailMessage(dto models.EmailDto) error {
+func PrepareEmailMessage(dto *models.EmailDto) error {
 
 	from := strings.Join([]string{"no-repl@", dto.DomainName}, "")
 	to := dto.Recipient
