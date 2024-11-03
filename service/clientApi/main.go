@@ -3,7 +3,6 @@ package clientapi
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"notification-api/excepriton"
 )
@@ -13,7 +12,7 @@ func SendSignUpData(dto any) error {
 	// http example ->
 	// https://thedevelopercafe.com/articles/make-post-request-in-go-d9756284d70b
 
-	fmt.Println("dto is ->\n", dto)
+	// fmt.Println("dto is ->\n", dto)
 
 	client := http.Client{}
 	requestURL := "str"  // config.ClientApiAuth()
@@ -21,7 +20,7 @@ func SendSignUpData(dto any) error {
 
 	body, err := json.Marshal(&dto)
 	if err != nil {
-		excepriton.HandleAnError("unmarshal err:", err)
+		excepriton.HandleAnError("unmarshal err:" + err.Error())
 		return err
 	}
 
@@ -29,7 +28,7 @@ func SendSignUpData(dto any) error {
 
 	req, err := http.NewRequest(http.MethodPost, requestURL, reader)
 	if err != nil {
-		excepriton.HandleAnError("creation a request was failed: ", err)
+		excepriton.HandleAnError("creation a request was failed: " + err.Error())
 		return err
 	}
 
@@ -38,11 +37,11 @@ func SendSignUpData(dto any) error {
 
 	res, err := client.Do(req)
 	if err != nil || res.StatusCode != 201 {
-		excepriton.HandleAnError("error making http request: ", err)
+		excepriton.HandleAnError("error making http request: " + err.Error())
 		return err
 	}
 
 	defer res.Body.Close()
-	fmt.Println("res status -> ", res.StatusCode)
+	// fmt.Println("res status -> ", res.StatusCode)
 	return nil
 }

@@ -1,8 +1,8 @@
 package telegram
 
 import (
-	"fmt"
 	"log"
+	"notification-api/excepriton"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -33,7 +33,7 @@ func defaultMessageHandler(chatId int64, bt *tgbotapi.BotAPI) {
 	msg := tgbotapi.NewMessage(chatId, txt)
 	_, err := bt.Send(msg)
 	if err != nil {
-		fmt.Println("Send message was failed.")
+		excepriton.HandleAnError("auth bot init got an error: " + err.Error())
 		return
 	}
 }

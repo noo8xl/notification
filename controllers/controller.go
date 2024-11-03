@@ -23,7 +23,7 @@ func Registration(c *fiber.Ctx) error {
 
 	err := c.BodyParser(&dto)
 	if err != nil {
-		excepriton.HandleAnError("Registration requestDto parser failed with error:", err)
+		excepriton.HandleAnError("Registration requestDto parser failed with error:" + err.Error())
 		c.Status(500)
 		return err
 	}
@@ -65,7 +65,7 @@ func SendMessage(c *fiber.Ctx) error {
 
 	err = c.BodyParser(dto)
 	if err != nil {
-		excepriton.HandleAnError("SendMessage bodyparser got an error: ", err)
+		excepriton.HandleAnError("SendMessage bodyparser got an error: " + err.Error())
 		c.Status(417)
 		return err
 	}
@@ -90,7 +90,7 @@ func SendMessage(c *fiber.Ctx) error {
 	// 	return err
 	// }
 	default:
-		excepriton.HandleAnError("Received wrong service type.", err)
+		excepriton.HandleAnError("Received wrong service type.")
 		c.Status(400)
 		return err
 	}
@@ -111,7 +111,7 @@ func HandleError(c *fiber.Ctx) error {
 
 	decodedMsg, err := url.QueryUnescape(ctx)
 	if err != nil {
-		excepriton.HandleAnError("Error decoding URL:", err)
+		excepriton.HandleAnError("Error decoding URL:" + err.Error())
 		c.Status(417)
 		return err
 	}

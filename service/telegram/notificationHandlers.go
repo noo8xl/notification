@@ -1,9 +1,8 @@
 package telegram
 
 import (
-	"fmt"
-	"log"
 	"notification-api/config"
+	"notification-api/excepriton"
 	"notification-api/models"
 	"os"
 	"strings"
@@ -19,7 +18,7 @@ func startMessageHandler(dto *models.CommandsDto) {
 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
 	_, err := dto.Bot.Send(msg)
 	if err != nil {
-		fmt.Println("Send message was failed.")
+		excepriton.HandleAnError("<startMessageHandler> got an error: " + err.Error())
 		return
 	}
 }
@@ -36,7 +35,7 @@ func helpMessageHandler(dto *models.CommandsDto) {
 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
 	_, err := dto.Bot.Send(msg)
 	if err != nil {
-		fmt.Println("Send message was failed.")
+		excepriton.HandleAnError("<helpMessageHandler> got an error: " + err.Error())
 		return
 	}
 }
@@ -53,7 +52,7 @@ func initErrorBot() *tgbotapi.BotAPI {
 	// fmt.Println("t => ", t)
 	bot, err := tgbotapi.NewBotAPI(t)
 	if err != nil {
-		log.Panic(err)
+		excepriton.HandleAnError("notification bot init got an error: " + err.Error())
 		os.Exit(1)
 	}
 
@@ -68,7 +67,7 @@ func initNotificationBot() *tgbotapi.BotAPI {
 
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		fmt.Println("bon init error >", err)
+		excepriton.HandleAnError("notification bot init got an error: " + err.Error())
 		os.Exit(1)
 	}
 	// bot.Debug = true

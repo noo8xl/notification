@@ -1,7 +1,7 @@
 package email
 
 import (
-	"fmt"
+	"notification-api/excepriton"
 	"notification-api/service/telegram"
 
 	"gopkg.in/gomail.v2"
@@ -10,20 +10,20 @@ import (
 // sendMessageViaEmail -> Send the email
 func sendMessageViaEmail(msg *gomail.Message) error {
 
-  // sandbox implementation <-
-  user := "32807a4cddbd87"
-  pwd := "d349cff32824c7"
-  // pwd := config.GetGmailSecret() // <- my gmail secrete pwd here
-  smtpHost := "sandbox.smtp.mailtrap.io"
-  smtpPort := 25
+	// sandbox implementation <-
+	user := "32807a4cddbd87"
+	pwd := "d349cff32824c7"
+	// pwd := config.GetGmailSecret() // <- my gmail secrete pwd here
+	smtpHost := "sandbox.smtp.mailtrap.io"
+	smtpPort := 25
 
-  n := gomail.NewDialer(smtpHost, smtpPort, user, pwd)
-  err := n.DialAndSend(msg)
-  if err != nil {
-    fmt.Println("email handler error.")
-    telegram.SendErrorMessage("email handler got an error.")
-  }
-  return err
+	n := gomail.NewDialer(smtpHost, smtpPort, user, pwd)
+	err := n.DialAndSend(msg)
+	if err != nil {
+		excepriton.HandleAnError("email handler got an error: " + err.Error())
+		telegram.SendErrorMessage("email handler got an error.")
+	}
+	return err
 }
 
 // ##################################################################################

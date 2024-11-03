@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	controller "notification-api/controllers"
 	"notification-api/excepriton"
 	"notification-api/service/database"
@@ -23,7 +22,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 
 	err = c.BodyParser(&content)
 	if err != nil {
-		excepriton.HandleAnError("requestDto parser failed with error:", err)
+		excepriton.HandleAnError("requestDto parser failed with error:" + err.Error())
 		c.Status(500)
 		return err
 	}
@@ -35,14 +34,10 @@ func AuthMiddleware(c *fiber.Ctx) error {
 	}
 	err = c.ReqHeaderParser(t)
 	if err != nil {
-		excepriton.HandleAnError("request header parsing err: ", err)
+		excepriton.HandleAnError("request header parsing err: " + err.Error())
 		c.Status(417)
 		return err
 	}
-
-	// fmt.Println("headers ojs => /n", t)
-	// fmt.Println("access str is  => ", access)
-	// fmt.Println("retrieved header is => ", t.AccessToken)
 
 	if t.AccessToken != access {
 		c.Status(403).JSON(fiber.Map{
@@ -50,7 +45,9 @@ func AuthMiddleware(c *fiber.Ctx) error {
 			"Reason": "Permission denied",
 		})
 
-		fmt.Println("got a wrong auth token from ", content.DomainName)
+		excepriton.HandleAnError("request header parsing err at <AuthMiddleware>")
+
+		// fmt.Println("got a wrong auth token from ", content.DomainName)
 		return nil
 	}
 

@@ -10,19 +10,45 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var errorChatID int64
-var notificationBot *tgbotapi.BotAPI
-var errorBot *tgbotapi.BotAPI
+type botSettings struct {
+	errorChatID     int64
+	notificationBot *tgbotapi.BotAPI
+	errorBot        *tgbotapi.BotAPI
+}
+
+// var errorChatID int64
+// var notificationBot *tgbotapi.BotAPI
+// var errorBot *tgbotapi.BotAPI
+
+// // InitAuthBot -> init auth bot for use telegram.passport
+// func InitAuthBot() *tgbotapi.BotAPI {
+// 	var err error
+// 	var conf = config.GetTelegramConfig()
+// 	//fmt.Println("conf is ->\n", conf)
+
+// 	bot, err := tgbotapi.NewBotAPI(conf.Token)
+// 	if err != nil {
+// 		excepriton.HandleAnError("auth bot init got an error: " + err.Error())
+// 		os.Exit(1)
+// 	}
+
+// 	// fmt.Println(bot.Self.UserName)
+// 	// bot.Debug = true
+// 	return bot
+// }
 
 // init -> init notif bot here and set some variables
-func init() {
+func initBot() *botSettings {
 
+	var bt = new(botSettings)
 	devChatId := config.GetDevChatId()
 	temp, _ := strconv.Atoi(devChatId)
-	errorChatID = int64(temp)
 
-	errorBot = initErrorBot()
-	notificationBot = initNotificationBot()
+	bt.errorChatID = int64(temp)
+	bt.errorBot = initErrorBot()
+	bt.notificationBot = initNotificationBot()
+
+	return bt
 }
 
 // SendUserMessage -> send a two-step code message to the current chatId
@@ -40,7 +66,8 @@ func SendUserMessage(dto *models.SendTwoStepCodeDto) error {
 
 	msg := tgbotapi.NewMessage(chatID, dto.Message)
 
-	_, err = notificationBot.Send(msg)
+	bot := initBot()
+	_, err = bot.notificationBot.Send(msg)
 	if err != nil {
 		fmt.Println("err is - >\n", err)
 	}
@@ -50,10 +77,11 @@ func SendUserMessage(dto *models.SendTwoStepCodeDto) error {
 
 // SendErrorMessage -> send a message to the current chatID (to a developer)
 func SendErrorMessage(ctx string) error {
-	msg := tgbotapi.NewMessage(errorChatID, ctx)
-	_, err := errorBot.Send(msg)
+	bot := initBot()
+	msg := tgbotapi.NewMessage(bot.errorChatID, ctx)
+	_, err := bot.errorBot.Send(msg)
 	if err != nil {
-		excepriton.HandleAnError("Send message was failed.", err)
+		excepriton.HandleAnError("Send message was failed." + err.Error())
 		return err
 	}
 	return nil

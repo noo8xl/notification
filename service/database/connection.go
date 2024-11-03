@@ -25,7 +25,7 @@ func initDatabaseConnection() (*database, error) {
 
 	db, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		excepriton.HandleAnError("db connection got an err: ", err)
+		excepriton.HandleAnError("db connection got an err: " + err.Error())
 		return nil, err
 	}
 	return &database{db: db, name: configs.Name}, nil

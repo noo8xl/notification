@@ -1,8 +1,8 @@
 package telegram
 
 import (
-	"log"
 	"notification-api/config"
+	"notification-api/excepriton"
 	"notification-api/models"
 	"os"
 	"time"
@@ -13,12 +13,12 @@ import (
 // InitAuthBot -> init auth bot for use telegram.passport
 func InitAuthBot() *tgbotapi.BotAPI {
 	var err error
-	var conf = config.GetTelegramConfig()
+	var conf = config.GetTelegramAuthConfig()
 	//fmt.Println("conf is ->\n", conf)
 
 	bot, err := tgbotapi.NewBotAPI(conf.Token)
 	if err != nil {
-		log.Panic(err)
+		excepriton.HandleAnError("auth bot init got an error: " + err.Error())
 		os.Exit(1)
 	}
 

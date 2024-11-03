@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"notification-api/excepriton"
 	"notification-api/helpers"
 	"notification-api/models"
@@ -45,7 +44,7 @@ func SignNewClient(dto *models.ClientRegistrationDto) error {
 	// 	return err
 	// }
 
-	log.Println("cand -> ", candidate.CompanyDomain)
+	// log.Println("cand -> ", candidate.CompanyDomain)
 
 	if candidate.CompanyDomain != "" {
 		return errors.New("user already exists")
@@ -53,7 +52,7 @@ func SignNewClient(dto *models.ClientRegistrationDto) error {
 
 	result, err := baseCollection.InsertOne(ctx, &doc)
 	if err != nil {
-		excepriton.HandleAnError("db insertion err: ", err)
+		excepriton.HandleAnError("db insertion err: " + err.Error())
 		return err
 	}
 
@@ -66,7 +65,7 @@ func SignNewClient(dto *models.ClientRegistrationDto) error {
 
 	result, err = detailsCollection.InsertOne(ctx, &clientDetails)
 	if err != nil {
-		excepriton.HandleAnError("db insertion err: ", err)
+		excepriton.HandleAnError("db insertion err: " + err.Error())
 		return err
 	}
 	return nil
@@ -89,10 +88,10 @@ func GetAccessToken(d string) (string, error) {
 	err = collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			excepriton.HandleAnError("Not found err: ", err)
+			excepriton.HandleAnError("Not found err: " + err.Error())
 			return "", err
 		}
-		excepriton.HandleAnError("GetAccessToken func err: ", err)
+		excepriton.HandleAnError("GetAccessToken func err: " + err.Error())
 		return "", err
 	}
 
@@ -114,7 +113,7 @@ func SaveToTheHistory(item *models.NotificationHistory) error {
 
 	_, err = collection.InsertOne(ctx, &item)
 	if err != nil {
-		excepriton.HandleAnError("save notification history was failed: ", err)
+		excepriton.HandleAnError("save notification history was failed: " + err.Error())
 		return err
 	}
 	return nil
