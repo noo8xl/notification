@@ -16,7 +16,6 @@ import (
 // SignNewClient -> prepare and save registration data of a new client
 func SignNewClient(dto *models.ClientRegistrationDto) error {
 
-	var clientId string
 	candidate := new(models.CompanyList)
 	clientDetails := new(models.CompanyDetails)
 	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
@@ -37,17 +36,10 @@ func SignNewClient(dto *models.ClientRegistrationDto) error {
 	cand := baseCollection.FindOne(ctx, filter)
 	if cand != nil {
 		cand.Decode(&candidate)
-	}
 
-	// if err := baseCollection.FindOne(ctx, filter).Decode(&candidate); err != nil {
-	// 	excepriton.HandleAnError("db find error: ", err)
-	// 	return err
-	// }
-
-	// log.Println("cand -> ", candidate.CompanyDomain)
-
-	if candidate.CompanyDomain != "" {
-		return errors.New("user already exists")
+		if candidate.CompanyDomain != "" {
+			return errors.New("user already exists")
+		}
 	}
 
 	result, err := baseCollection.InsertOne(ctx, &doc)
@@ -56,8 +48,7 @@ func SignNewClient(dto *models.ClientRegistrationDto) error {
 		return err
 	}
 
-	clientId = fmt.Sprintf("%v", result.InsertedID)
-	clientDetails.CompanyId = clientId
+	clientDetails.CompanyId = fmt.Sprintf("%v", result.InsertedID)
 	clientDetails.DomainName = dto.DomainName
 	clientDetails.UserEmail = dto.UserEmail
 	clientDetails.JoinDate = time.Now().Format(time.UnixDate)

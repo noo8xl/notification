@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/url"
 	"notification-api/excepriton"
 	"notification-api/models"
@@ -69,6 +70,8 @@ func SendMessage(c *fiber.Ctx) error {
 		c.Status(417)
 		return err
 	}
+
+	fmt.Println("dto is -> ", &dto)
 
 	switch dto.ServiceType {
 	case "telegram":

@@ -53,8 +53,6 @@ func initBot() *botSettings {
 
 // SendUserMessage -> send a two-step code message to the current chatId
 func SendUserMessage(dto *models.SendTwoStepCodeDto) error {
-	fmt.Println("dto is -> ", dto.ChatID, dto.Message)
-
 	var err error
 	var temp, _ = strconv.Atoi(dto.ChatID)
 	var chatID = int64(temp)
