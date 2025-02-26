@@ -3,42 +3,40 @@ package telegram
 import (
 	"notification-api/config"
 	"notification-api/excepriton"
-	"notification-api/models"
 	"os"
-	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// startMessageHandler -> handle only </start> user message
-func startMessageHandler(dto *models.CommandsDto) {
-	txt := strings.Join([]string{
-		"Hi, ", dto.UserName, "! ",
-		"Welcome to AuthBot!", "should add some text <-"}, "")
-	msg := tgbotapi.NewMessage(dto.ChatId, txt)
-	_, err := dto.Bot.Send(msg)
-	if err != nil {
-		excepriton.HandleAnError("<startMessageHandler> got an error: " + err.Error())
-		return
-	}
-}
+// // startMessageHandler -> handle only </start> user message
+// func startMessageHandler(dto *models.CommandsDto) {
+// 	txt := strings.Join([]string{
+// 		"Hi, ", dto.UserName, "! ",
+// 		"Welcome to AuthBot!", "should add some text <-"}, "")
+// 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
+// 	_, err := dto.Bot.Send(msg)
+// 	if err != nil {
+// 		excepriton.HandleAnError("<startMessageHandler> got an error: " + err.Error())
+// 		return
+// 	}
+// }
 
-// helpMessageHandler -> handle only </help> user message
-func helpMessageHandler(dto *models.CommandsDto) {
+// // helpMessageHandler -> handle only </help> user message
+// func helpMessageHandler(dto *models.CommandsDto) {
 
-	greetings := "Let's start to teach you how to interact with me!\n"
-	info1 := "_"
-	info2 := "_"
-	info3 := "_ will update soon"
+// 	greetings := "Let's start to teach you how to interact with me!\n"
+// 	info1 := "_"
+// 	info2 := "_"
+// 	info3 := "_ will update soon"
 
-	txt := strings.Join([]string{greetings, info1, info2, info3}, "\n")
-	msg := tgbotapi.NewMessage(dto.ChatId, txt)
-	_, err := dto.Bot.Send(msg)
-	if err != nil {
-		excepriton.HandleAnError("<helpMessageHandler> got an error: " + err.Error())
-		return
-	}
-}
+// 	txt := strings.Join([]string{greetings, info1, info2, info3}, "\n")
+// 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
+// 	_, err := dto.Bot.Send(msg)
+// 	if err != nil {
+// 		excepriton.HandleAnError("<helpMessageHandler> got an error: " + err.Error())
+// 		return
+// 	}
+// }
 
 // ##########################################################################
 // ###################### -> connection area <- #############################

@@ -6,8 +6,10 @@ import (
 	"notification-api/excepriton"
 	"notification-api/models"
 	"notification-api/service/database"
+	"notification-api/service/email"
 	"notification-api/service/telegram"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -17,8 +19,18 @@ import (
 
 // ===============================
 
+type AuthService struct {
+	db *database.DatabaseService
+}
+
+type NotificationService struct {
+	db *database.DatabaseService
+	tg *telegram.TelegramService
+	e  *email.EmailService
+}
+
 // Registration -> sign a new client
-func Registration(c *fiber.Ctx) error {
+func (a *AuthService) Registration(c *fiber.Ctx) error {
 
 	dto := new(models.ClientRegistrationDto)
 
@@ -29,7 +41,7 @@ func Registration(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = database.SignNewClient(dto)
+	err = a.db.SignNewClient(dto)
 	if err != nil {
 		if err.Error() == "user already exists" {
 			c.Status(400).JSON(fiber.Map{
@@ -49,20 +61,20 @@ func Registration(c *fiber.Ctx) error {
 }
 
 // ConfirmSignUp -> confirm registration via client email
-func ConfirmSignUp(c *fiber.Ctx) error {
+func (a *AuthService) ConfirmSignUp(c *fiber.Ctx) error {
 	return nil
 }
 
 // RenewAuthKey -> generate a new client auth key and send it via email
-func RenewAuthKey(c *fiber.Ctx) error {
+func (a *AuthService) RenewAuthKey(c *fiber.Ctx) error {
 	// date, email
 	return nil
 }
 
 // SendMessage -> handle a request from the API and send a notification via chosen service
-func SendMessage(c *fiber.Ctx) error {
+func (n *NotificationService) SendMessage(c *fiber.Ctx) error {
 	var err error
-	dto := new(NotificationRequestDto)
+	dto := new(models.NotificationRequestDto)
 
 	err = c.BodyParser(dto)
 	if err != nil {
@@ -71,17 +83,34 @@ func SendMessage(c *fiber.Ctx) error {
 		return err
 	}
 
+	// SendTelegramMessage() error {
+	// 	d := models.SendTwoStepCodeDto{
+	// 		ChatID:  dto.Recipient,
+	// 		Message: dto.Content,
+	// 	}
+	// 	return telegram.SendUserMessage(&d)
+
 	fmt.Println("dto is -> ", &dto)
 
 	switch dto.ServiceType {
 	case "telegram":
-		err = dto.SendTelegramMessage()
+		d := &models.SendTwoStepCodeDto{
+			ChatID:  dto.Recipient,
+			Message: dto.Content,
+		}
+		err = n.tg.SendUserMessage(d)
 		if err != nil {
 			c.Status(417)
 			return err
 		}
 	case "email":
-		err = dto.SendEmailMessage()
+		d := &models.EmailDto{
+			ServiceType: dto.ServiceType,
+			DomainName:  dto.DomainName,
+			Content:     dto.Content,
+			Recipient:   dto.Recipient,
+		}
+		err = n.e.PrepareEmailMessage(d)
 		if err != nil {
 			c.Status(417)
 			return err
@@ -97,8 +126,14 @@ func SendMessage(c *fiber.Ctx) error {
 		c.Status(400)
 		return err
 	}
-
-	err = dto.SaveToTheHistory()
+	historyItem := &models.NotificationHistory{
+		DateTime:    time.Now().Format(time.UnixDate),
+		Recipient:   dto.Recipient,
+		DomainName:  dto.DomainName,
+		MessageBody: dto.Content,
+		SentVia:     dto.ServiceType,
+	}
+	err = n.db.SaveToTheHistory(historyItem)
 	if err != nil {
 		c.Status(417)
 		return err
@@ -109,7 +144,7 @@ func SendMessage(c *fiber.Ctx) error {
 }
 
 // HandleError -> handle all critical project errors and send msg to developer
-func HandleError(c *fiber.Ctx) error {
+func (n *NotificationService) HandleError(c *fiber.Ctx) error {
 	ctx := c.AllParams()["msg"]
 
 	decodedMsg, err := url.QueryUnescape(ctx)
@@ -119,7 +154,7 @@ func HandleError(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = telegram.SendErrorMessage(decodedMsg)
+	err = n.tg.SendErrorMessage(decodedMsg)
 	if err != nil {
 		c.Status(417)
 		return err
@@ -130,14 +165,14 @@ func HandleError(c *fiber.Ctx) error {
 }
 
 // HandleError -> handle all critical project errors and send msg to developer
-func GetHistoryList(c *fiber.Ctx) error {
+func (n *NotificationService) GetHistoryList(c *fiber.Ctx) error {
 	params := c.AllParams()
 
 	skip, _ := strconv.Atoi(params["skip"])
 	lim, _ := strconv.Atoi(params["limit"])
 	recipient := params["recipient"]
 
-	list, err := database.GetNotificationHistotyList(skip, lim, recipient)
+	list, err := n.db.GetNotificationHistotyList(skip, lim, recipient)
 	if err != nil {
 		c.Status(417)
 		return err

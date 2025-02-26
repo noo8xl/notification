@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"notification-api/config"
 	"notification-api/excepriton"
 	"notification-api/helpers"
 	"notification-api/models"
@@ -11,10 +12,31 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type DatabaseService struct {
+	db   *mongo.Client
+	name string
+}
+
+// connectDb -> is a connector to a mongodb database with required params
+func initDatabaseConnection() *DatabaseService {
+
+	ctx := context.Background()
+	opts := config.GetMONGOdatabaseConfig()
+	// uri := strings.Join([]string{"mongodb+srv://", configs.User, ":", configs.Password, "@cluster001.sipjs.mongodb.net/?retryWrites=true&w=majority"}, "")
+	clientOptions := options.Client().ApplyURI(opts[0])
+
+	conn, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		excepriton.HandleAnError("db connection got an err: " + err.Error())
+	}
+	return &DatabaseService{db: conn, name: opts[1]}
+}
+
 // SignNewClient -> prepare and save registration data of a new client
-func SignNewClient(dto *models.ClientRegistrationDto) error {
+func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error {
 
 	candidate := new(models.CompanyList)
 	clientDetails := new(models.CompanyDetails)
@@ -23,15 +45,11 @@ func SignNewClient(dto *models.ClientRegistrationDto) error {
 
 	userHashKey := helpers.CreateClientKey(38)
 	ctx := context.TODO()
-	client, err := initDatabaseConnection()
-	if err != nil {
-		return err
-	}
 
-	db := client.db.Database(client.name)
+	db := s.db.Database(s.name)
 	baseCollection := db.Collection("CompanyList")
 	detailsCollection := db.Collection("CompanyDetails")
-	defer client.db.Disconnect(ctx)
+	defer s.db.Disconnect(ctx)
 
 	cand := baseCollection.FindOne(ctx, filter)
 	if cand != nil {
@@ -63,20 +81,17 @@ func SignNewClient(dto *models.ClientRegistrationDto) error {
 }
 
 // GetAccessToken -> get client access token for middleware
-func GetAccessToken(d string) (string, error) {
+func (s *DatabaseService) GetAccessToken(d string) (string, error) {
 
 	var result *models.CompanyDetails
-	client, err := initDatabaseConnection()
-	if err != nil {
-		return "", err
-	}
-	db := client.db.Database(client.name)
+
+	db := s.db.Database(s.name)
 	collection := db.Collection("CompanyDetails")
 	filter := bson.D{{Key: "domainName", Value: d}}
 	ctx := context.TODO()
-	defer client.db.Disconnect(ctx)
+	defer s.db.Disconnect(ctx)
 
-	err = collection.FindOne(ctx, filter).Decode(&result)
+	err := collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			excepriton.HandleAnError("Not found err: " + err.Error())
@@ -89,20 +104,15 @@ func GetAccessToken(d string) (string, error) {
 	return result.UniqueKey, nil
 }
 
-// SaveHistory -> save notification details
-func SaveToTheHistory(item *models.NotificationHistory) error {
+// SaveHistory -> save notification details (s -> service)
+func (s *DatabaseService) SaveToTheHistory(item *models.NotificationHistory) error {
 
-	client, err := initDatabaseConnection()
-	if err != nil {
-		return err
-	}
-
-	db := client.db.Database(client.name)
+	db := s.db.Database(s.name)
 	collection := db.Collection("CompanyDetails")
 	ctx := context.TODO()
-	defer client.db.Disconnect(ctx)
+	defer s.db.Disconnect(ctx)
 
-	_, err = collection.InsertOne(ctx, &item)
+	_, err := collection.InsertOne(ctx, &item)
 	if err != nil {
 		excepriton.HandleAnError("save notification history was failed: " + err.Error())
 		return err
@@ -111,7 +121,7 @@ func SaveToTheHistory(item *models.NotificationHistory) error {
 }
 
 // GetNotificationHistotyList -> get a list of notifications
-func GetNotificationHistotyList(skip int, limit int, recepient string) ([]*models.NotificationHistory, error) {
+func (s *DatabaseService) GetNotificationHistotyList(skip int, limit int, recepient string) ([]*models.NotificationHistory, error) {
 
 	return nil, nil
 }

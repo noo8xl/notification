@@ -10,8 +10,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type botSettings struct {
-	errorChatID     int64
+type TelegramService struct {
 	notificationBot *tgbotapi.BotAPI
 	errorBot        *tgbotapi.BotAPI
 }
@@ -38,21 +37,19 @@ type botSettings struct {
 // }
 
 // init -> init notif bot here and set some variables
-func initBot() *botSettings {
+func init() {
+	initBots()
+}
 
-	var bt = new(botSettings)
-	devChatId := config.GetDevChatId()
-	temp, _ := strconv.Atoi(devChatId)
-
-	bt.errorChatID = int64(temp)
-	bt.errorBot = initErrorBot()
-	bt.notificationBot = initNotificationBot()
-
-	return bt
+func initBots() *TelegramService {
+	return &TelegramService{
+		notificationBot: initNotificationBot(),
+		errorBot:        initErrorBot(),
+	}
 }
 
 // SendUserMessage -> send a two-step code message to the current chatId
-func SendUserMessage(dto *models.SendTwoStepCodeDto) error {
+func (s *TelegramService) SendUserMessage(dto *models.SendTwoStepCodeDto) error {
 	var err error
 	var temp, _ = strconv.Atoi(dto.ChatID)
 	var chatID = int64(temp)
@@ -64,8 +61,7 @@ func SendUserMessage(dto *models.SendTwoStepCodeDto) error {
 
 	msg := tgbotapi.NewMessage(chatID, dto.Message)
 
-	bot := initBot()
-	_, err = bot.notificationBot.Send(msg)
+	_, err = s.notificationBot.Send(msg)
 	if err != nil {
 		fmt.Println("err is - >\n", err)
 	}
@@ -74,10 +70,13 @@ func SendUserMessage(dto *models.SendTwoStepCodeDto) error {
 }
 
 // SendErrorMessage -> send a message to the current chatID (to a developer)
-func SendErrorMessage(ctx string) error {
-	bot := initBot()
-	msg := tgbotapi.NewMessage(bot.errorChatID, ctx)
-	_, err := bot.errorBot.Send(msg)
+func (s *TelegramService) SendErrorMessage(ctx string) error {
+	devChatId := config.GetDevChatId()
+	temp, _ := strconv.Atoi(devChatId)
+
+	errorChatID := int64(temp)
+	msg := tgbotapi.NewMessage(errorChatID, ctx)
+	_, err := s.errorBot.Send(msg)
 	if err != nil {
 		excepriton.HandleAnError("Send message was failed." + err.Error())
 		return err
