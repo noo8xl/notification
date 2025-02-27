@@ -3,7 +3,6 @@ package telegram
 import (
 	"notification-api/config"
 	"notification-api/excepriton"
-	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -44,18 +43,12 @@ import (
 
 // initErrorBot -> init tg bot for send ERRORRs
 func initErrorBot() *tgbotapi.BotAPI {
-	var err error
-	var t string = config.GetErrorHandlerToken()
+	token := config.GetErrorHandlerToken()
 
-	// fmt.Println("t => ", t)
-	bot, err := tgbotapi.NewBotAPI(t)
+	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		excepriton.HandleAnError("notification bot init got an error: " + err.Error())
-		os.Exit(1)
+		excepriton.HandleAnError("error handler bot init got an error: " + err.Error())
 	}
-
-	// fmt.Println(bot.Self.UserName)
-	// bot.Debug = true
 	return bot
 }
 
@@ -66,9 +59,7 @@ func initNotificationBot() *tgbotapi.BotAPI {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		excepriton.HandleAnError("notification bot init got an error: " + err.Error())
-		os.Exit(1)
 	}
-	// bot.Debug = true
 	return bot
 }
 

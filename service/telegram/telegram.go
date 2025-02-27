@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"log"
 	"notification-api/config"
 	"notification-api/excepriton"
 	"notification-api/models"
@@ -15,36 +16,14 @@ type TelegramService struct {
 	errorBot        *tgbotapi.BotAPI
 }
 
-// var errorChatID int64
-// var notificationBot *tgbotapi.BotAPI
-// var errorBot *tgbotapi.BotAPI
+func NewTelegramService() *TelegramService {
 
-// // InitAuthBot -> init auth bot for use telegram.passport
-// func InitAuthBot() *tgbotapi.BotAPI {
-// 	var err error
-// 	var conf = config.GetTelegramConfig()
-// 	//fmt.Println("conf is ->\n", conf)
+	eb := initErrorBot()
+	nb := initNotificationBot()
 
-// 	bot, err := tgbotapi.NewBotAPI(conf.Token)
-// 	if err != nil {
-// 		excepriton.HandleAnError("auth bot init got an error: " + err.Error())
-// 		os.Exit(1)
-// 	}
-
-// 	// fmt.Println(bot.Self.UserName)
-// 	// bot.Debug = true
-// 	return bot
-// }
-
-// init -> init notif bot here and set some variables
-func init() {
-	initBots()
-}
-
-func initBots() *TelegramService {
 	return &TelegramService{
-		notificationBot: initNotificationBot(),
-		errorBot:        initErrorBot(),
+		notificationBot: nb,
+		errorBot:        eb,
 	}
 }
 
@@ -71,10 +50,13 @@ func (s *TelegramService) SendUserMessage(dto *models.SendTwoStepCodeDto) error 
 
 // SendErrorMessage -> send a message to the current chatID (to a developer)
 func (s *TelegramService) SendErrorMessage(ctx string) error {
+
 	devChatId := config.GetDevChatId()
 	temp, _ := strconv.Atoi(devChatId)
 
+	log.Println("log bot -> ", s)
 	errorChatID := int64(temp)
+
 	msg := tgbotapi.NewMessage(errorChatID, ctx)
 	_, err := s.errorBot.Send(msg)
 	if err != nil {

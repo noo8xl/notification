@@ -9,12 +9,8 @@ import (
 
 // SendSignUpData -> send auth data to the main client API
 func SendSignUpData(dto any) error {
-	// http example ->
-	// https://thedevelopercafe.com/articles/make-post-request-in-go-d9756284d70b
 
-	// fmt.Println("dto is ->\n", dto)
-
-	client := http.Client{}
+	client := &http.Client{}
 	requestURL := "str"  // config.ClientApiAuth()
 	accessToken := "str" // config.GetClientAPIAccessToken()
 

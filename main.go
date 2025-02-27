@@ -25,8 +25,8 @@ type appController struct {
 	a controller.AuthService
 }
 
-func handler(app *fiber.App, c *appController) {
-	// signup for a new company
+func httpRoutesHandlerRegister(app *fiber.App, c *appController) {
+	// sign a new company
 	app.Post("/notification/api/auth/sign-up/", c.a.Registration) // sign a new client
 	app.Get("/notification/api/auth/sign-up/confirmation/:code/", c.a.ConfirmSignUp)
 	app.Get("", c.a.RenewAuthKey) // set a new client auth key
@@ -41,27 +41,11 @@ func handler(app *fiber.App, c *appController) {
 }
 
 func main() {
-
-	// ######################### -> init fiber <- ################################
 	app := fiber.New()
 	app.Use(recover.New())
-	// AuthMiddleware -> check a client access key
 	// app.Use("/api/v1/", middlewares.AuthMiddleware)
 
-	// ###################### -> routes list <- ##################################
-	handler(app, &appController{})
-	// // signup for a new company
-	// app.Post("/notification/api/auth/sign-up/", c.a.Registration) // sign a new client
-	// app.Get("/notification/api/auth/sign-up/confirmation/:code/", c.a.ConfirmSignUp)
-	// app.Get("", c.a.RenewAuthKey) // set a new client auth key
-
-	// // -> notification handlers
-	// app.Post("/api/v1/notification/send-user-message/", c.n.SendMessage)
-	// // handle <project> errors (fatal or server errors)
-	// // chatId (as const) => developer tg chat id
-	// app.Get("/api/v1/notification/handle-error/:msg/", c.n.HandleError)
-	// // -> get a list of sent notif by recipient string value
-	// app.Get("/api/v1/notification/get-history/:skip/:limit/:recipient/", c.n.GetHistoryList)
+	httpRoutesHandlerRegister(app, &appController{})
 
 	// // #################### > handle telegram 0Auth <- ###########################
 	// // go func() {
@@ -72,7 +56,7 @@ func main() {
 	// // 	}
 	// // }()
 
-	// ##################### > start fiber server <- #############################
+	// ##################### > start the server <- #############################
 	err := app.Listen(":7493")
 	if err != nil {
 		log.Fatal("Can't start the server: ", err)
