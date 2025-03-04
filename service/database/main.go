@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"notification-api/config"
 	"notification-api/excepriton"
 	"notification-api/helpers"
 	"notification-api/models"
@@ -12,32 +11,12 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-type DatabaseService struct {
-	db   *mongo.Client
-	name string
-}
-
-// connectDb -> is a connector to a mongodb database with required params
-func initDatabaseConnection() *DatabaseService {
-
-	ctx := context.Background()
-	opts := config.GetMONGOdatabaseConfig()
-	// uri := strings.Join([]string{"mongodb+srv://", configs.User, ":", configs.Password, "@cluster001.sipjs.mongodb.net/?retryWrites=true&w=majority"}, "")
-	clientOptions := options.Client().ApplyURI(opts[0])
-
-	conn, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		excepriton.HandleAnError("db connection got an err: " + err.Error())
-	}
-	return &DatabaseService{db: conn, name: opts[1]}
-}
 
 // SignNewClient -> prepare and save registration data of a new client
 func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error {
 
+	s = initDatabaseConnection()
 	candidate := new(models.CompanyList)
 	clientDetails := new(models.CompanyDetails)
 	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
@@ -72,7 +51,7 @@ func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error
 	clientDetails.JoinDate = time.Now().Format(time.UnixDate)
 	clientDetails.UniqueKey = userHashKey
 
-	result, err = detailsCollection.InsertOne(ctx, &clientDetails)
+	_, err = detailsCollection.InsertOne(ctx, &clientDetails)
 	if err != nil {
 		excepriton.HandleAnError("db insertion err: " + err.Error())
 		return err
@@ -83,6 +62,7 @@ func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error
 // GetAccessToken -> get client access token for middleware
 func (s *DatabaseService) GetAccessToken(d string) (string, error) {
 
+	s = initDatabaseConnection()
 	var result *models.CompanyDetails
 
 	db := s.db.Database(s.name)
@@ -107,6 +87,7 @@ func (s *DatabaseService) GetAccessToken(d string) (string, error) {
 // SaveHistory -> save notification details (s -> service)
 func (s *DatabaseService) SaveToTheHistory(item *models.NotificationHistory) error {
 
+	s = initDatabaseConnection()
 	db := s.db.Database(s.name)
 	collection := db.Collection("CompanyDetails")
 	ctx := context.TODO()
