@@ -25,27 +25,33 @@ type appController struct {
 	a controller.AuthService
 }
 
-func httpRoutesHandlerRegister(app *fiber.App, c *appController) {
-	// sign a new company
-	app.Post("/notification/api/auth/sign-up/", c.a.Registration) // sign a new client
-	app.Get("/notification/api/auth/sign-up/confirmation/:code/", c.a.ConfirmSignUp)
-	app.Get("", c.a.RenewAuthKey) // set a new client auth key
-
-	// -> notification handlers
-	app.Post("/api/v1/notification/send-user-message/", c.n.SendMessage)
-	// handle <project> errors (fatal or server errors)
-	// chatId (as const) => developer tg chat id
-	app.Get("/api/v1/notification/handle-error/:msg/", c.n.HandleError)
-	// -> get a list of sent notif by recipient string value
-	app.Get("/api/v1/notification/get-history/:skip/:limit/:recipient/", c.n.GetHistoryList)
+func InitController() *appController {
+	return &appController{
+		n: *controller.InitNotificationService(),
+		a: *controller.InitAuthService(),
+	}
 }
 
 func main() {
 	app := fiber.New()
 	app.Use(recover.New())
 	// app.Use("/api/v1/", middlewares.AuthMiddleware)
+	svc := InitController()
 
-	httpRoutesHandlerRegister(app, &appController{})
+	// sign a new company
+	app.Post("/notification/api/auth/sign-up/", svc.a.Registration) // sign a new client
+	app.Get("/notification/api/auth/sign-up/confirmation/:code/", svc.a.ConfirmSignUp)
+	app.Get("", svc.a.RenewAuthKey) // set a new client auth key
+
+	// -> notification handlers
+	app.Post("/api/v1/notification/send-user-message/", svc.n.SendMessage)
+	// handle <project> errors (fatal or server errors)
+	// chatId (as const) => developer tg chat id
+	app.Get("/api/v1/notification/handle-error/:msg/", svc.n.HandleError)
+	// -> get a list of sent notif by recipient string value
+	app.Get("/api/v1/notification/get-history/:skip/:limit/:recipient/", svc.n.GetHistoryList)
+
+	// svc.httpRoutesHandlerRegister(app)
 
 	// // #################### > handle telegram 0Auth <- ###########################
 	// // go func() {

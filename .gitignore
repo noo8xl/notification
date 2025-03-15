@@ -22,14 +22,12 @@ go.work
 
 config.env/
 
-.env
+*.env
 
 config/auth_rsa.key
 
 config/config.build.go
 
-notification-server
-
 .idea/
 
-env
+/bin/

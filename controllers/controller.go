@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"log"
 	"net/url"
 	"notification-api/excepriton"
@@ -26,8 +25,26 @@ type AuthService struct {
 
 type NotificationService struct {
 	db *database.DatabaseService
-	// tg *telegram.TelegramService
-	e *email.EmailService
+	tg *telegram.TelegramService
+	e  *email.EmailService
+}
+
+func InitAuthService() *AuthService {
+	return &AuthService{
+		db: database.InitDatabaseService(),
+	}
+}
+
+func InitNotificationService() *NotificationService {
+	return &NotificationService{
+		db: database.InitDatabaseService(),
+		tg: telegram.NewTelegramService(),
+		e:  email.NewEmailService(),
+	}
+}
+
+func InitController() {
+
 }
 
 // Registration -> sign a new client
@@ -84,23 +101,13 @@ func (n *NotificationService) SendMessage(c *fiber.Ctx) error {
 		return err
 	}
 
-	// SendTelegramMessage() error {
-	// 	d := models.SendTwoStepCodeDto{
-	// 		ChatID:  dto.Recipient,
-	// 		Message: dto.Content,
-	// 	}
-	// 	return telegram.SendUserMessage(&d)
-
-	fmt.Println("dto is -> ", &dto)
-
 	switch dto.ServiceType {
 	case "telegram":
-		bot := telegram.NewTelegramService()
 		d := &models.SendTwoStepCodeDto{
 			ChatID:  dto.Recipient,
 			Message: dto.Content,
 		}
-		err = bot.SendUserMessage(d)
+		err = n.tg.SendUserMessage(d)
 		if err != nil {
 			c.Status(417)
 			return err
@@ -150,7 +157,6 @@ func (n *NotificationService) HandleError(c *fiber.Ctx) error {
 	log.Println("log1")
 	ctx := c.AllParams()["msg"]
 
-	bot := telegram.NewTelegramService()
 	decodedMsg, err := url.QueryUnescape(ctx)
 	if err != nil {
 		excepriton.HandleAnError("Error decoding URL:" + err.Error())
@@ -158,7 +164,7 @@ func (n *NotificationService) HandleError(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = bot.SendErrorMessage(decodedMsg)
+	err = n.tg.SendErrorMessage(decodedMsg)
 	if err != nil {
 		c.Status(417)
 		return err

@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"fmt"
-	"log"
 	"notification-api/config"
 	"notification-api/excepriton"
 	"notification-api/models"
@@ -29,18 +28,12 @@ func NewTelegramService() *TelegramService {
 
 // SendUserMessage -> send a two-step code message to the current chatId
 func (s *TelegramService) SendUserMessage(dto *models.SendTwoStepCodeDto) error {
-	var err error
 	var temp, _ = strconv.Atoi(dto.ChatID)
 	var chatID = int64(temp)
 
-	//ctx := strings.Join([]string{
-	//  "Your new auth code is ",
-	//  "< ", dto.Code, " >",
-	//  ". This code is available only a few minutes."}, "")
-
 	msg := tgbotapi.NewMessage(chatID, dto.Message)
 
-	_, err = s.notificationBot.Send(msg)
+	_, err := s.notificationBot.Send(msg)
 	if err != nil {
 		fmt.Println("err is - >\n", err)
 	}
@@ -53,8 +46,6 @@ func (s *TelegramService) SendErrorMessage(ctx string) error {
 
 	devChatId := config.GetDevChatId()
 	temp, _ := strconv.Atoi(devChatId)
-
-	log.Println("log bot -> ", s)
 	errorChatID := int64(temp)
 
 	msg := tgbotapi.NewMessage(errorChatID, ctx)

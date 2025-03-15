@@ -7,22 +7,36 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
+type Opts struct {
+	host     string
+	port     int
+	username string
+	password string
+}
 type EmailService struct {
-	tg *telegram.TelegramService
+	opts *Opts
+	tg   *telegram.TelegramService
+}
+
+func NewEmailService() *EmailService {
+
+	// sandbox implementation <-
+	opts := &Opts{
+		host:     "sandbox.smtp.mailtrap.io",
+		port:     25,
+		username: "32807a4cddbd87",
+		password: "d349cff32824c7",
+		// password: config.GetGmailSecret() // <- my gmail secrete pwd here
+	}
+	tg := telegram.NewTelegramService()
+	return &EmailService{tg: tg, opts: opts}
 }
 
 // sendMessageViaEmail -> Send the email
 func (s *EmailService) sendMessageViaEmail(msg *gomail.Message) error {
 
-	// sandbox implementation <-
-	user := "32807a4cddbd87"
-	pwd := "d349cff32824c7"
-	// pwd := config.GetGmailSecret() // <- my gmail secrete pwd here
-	smtpHost := "sandbox.smtp.mailtrap.io"
-	smtpPort := 25
-
-	n := gomail.NewDialer(smtpHost, smtpPort, user, pwd)
-	err := n.DialAndSend(msg)
+	dialer := gomail.NewDialer(s.opts.host, s.opts.port, s.opts.username, s.opts.password)
+	err := dialer.DialAndSend(msg)
 	if err != nil {
 		excepriton.HandleAnError("email handler got an error: " + err.Error())
 		s.tg.SendErrorMessage("email handler got an error.")

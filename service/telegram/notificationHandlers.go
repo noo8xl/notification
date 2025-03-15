@@ -52,7 +52,7 @@ func initErrorBot() *tgbotapi.BotAPI {
 	return bot
 }
 
-// InitNotificationBot -> init tg bot for notification
+// initNotificationBot -> init tg bot for notification
 func initNotificationBot() *tgbotapi.BotAPI {
 	token := config.GetNitificationBotToken()
 

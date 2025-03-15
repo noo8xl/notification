@@ -14,6 +14,10 @@ type DatabaseService struct {
 	name string
 }
 
+func InitDatabaseService() *DatabaseService {
+	return &DatabaseService{db: nil, name: ""}
+}
+
 // connectDb -> is a connector to a mongodb database with required params
 func initDatabaseConnection() *DatabaseService {
 
