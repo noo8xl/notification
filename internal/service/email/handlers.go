@@ -1,8 +1,8 @@
 package email
 
 import (
-	"notification-api/models"
-	lettershtmlcontent "notification-api/service/email/letters.html.content"
+	"notification-api/pkg/models"
+	lettershtmlcontent "notification-api/public/letters.html.content"
 	"strings"
 
 	"gopkg.in/gomail.v2"

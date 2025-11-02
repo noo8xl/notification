@@ -1,4 +1,4 @@
-package excepriton
+package exceptions
 
 import (
 	"log"

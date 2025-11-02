@@ -3,8 +3,8 @@ package telegram
 import (
 	"fmt"
 	"notification-api/config"
-	"notification-api/excepriton"
-	"notification-api/models"
+	"notification-api/pkg/exceptions"
+	"notification-api/pkg/models"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -51,7 +51,7 @@ func (s *TelegramService) SendErrorMessage(ctx string) error {
 	msg := tgbotapi.NewMessage(errorChatID, ctx)
 	_, err := s.errorBot.Send(msg)
 	if err != nil {
-		excepriton.HandleAnError("Send message was failed." + err.Error())
+		exceptions.HandleAnError("Send message was failed." + err.Error())
 		return err
 	}
 	return nil

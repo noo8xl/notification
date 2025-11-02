@@ -2,7 +2,7 @@ package telegram
 
 import (
 	"notification-api/config"
-	"notification-api/excepriton"
+	"notification-api/pkg/exceptions"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -15,7 +15,7 @@ import (
 // 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
 // 	_, err := dto.Bot.Send(msg)
 // 	if err != nil {
-// 		excepriton.HandleAnError("<startMessageHandler> got an error: " + err.Error())
+// 		exceptions.HandleAnError("<startMessageHandler> got an error: " + err.Error())
 // 		return
 // 	}
 // }
@@ -32,7 +32,7 @@ import (
 // 	msg := tgbotapi.NewMessage(dto.ChatId, txt)
 // 	_, err := dto.Bot.Send(msg)
 // 	if err != nil {
-// 		excepriton.HandleAnError("<helpMessageHandler> got an error: " + err.Error())
+// 		exceptions.HandleAnError("<helpMessageHandler> got an error: " + err.Error())
 // 		return
 // 	}
 // }
@@ -47,7 +47,7 @@ func initErrorBot() *tgbotapi.BotAPI {
 
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		excepriton.HandleAnError("error handler bot init got an error: " + err.Error())
+		exceptions.HandleAnError("error handler bot init got an error: " + err.Error())
 	}
 	return bot
 }
@@ -58,7 +58,7 @@ func initNotificationBot() *tgbotapi.BotAPI {
 
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		excepriton.HandleAnError("notification bot init got an error: " + err.Error())
+		exceptions.HandleAnError("notification bot init got an error: " + err.Error())
 	}
 	return bot
 }

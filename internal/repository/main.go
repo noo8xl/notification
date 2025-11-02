@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"notification-api/config"
-	"notification-api/excepriton"
+	"notification-api/pkg/exceptions"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,7 +15,7 @@ type DatabaseService struct {
 }
 
 func InitDatabaseService() *DatabaseService {
-	return &DatabaseService{db: nil, name: ""}
+	return initDatabaseConnection()
 }
 
 // connectDb -> is a connector to a mongodb database with required params
@@ -28,7 +28,7 @@ func initDatabaseConnection() *DatabaseService {
 
 	conn, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		excepriton.HandleAnError("db connection got an err: " + err.Error())
+		exceptions.HandleAnError("db connection got an err: " + err.Error())
 	}
 	return &DatabaseService{db: conn, name: opts[1]}
 }

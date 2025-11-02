@@ -1,51 +1,15 @@
-package controller
+package http
 
 import (
 	"log"
 	"net/url"
-	"notification-api/excepriton"
-	"notification-api/models"
-	"notification-api/service/database"
-	"notification-api/service/email"
-	"notification-api/service/telegram"
+	"notification-api/pkg/exceptions"
+	models "notification-api/pkg/models"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-// the doc is here ->
-// -> https://docs.gofiber.io/api/ctx/
-
-// ===============================
-
-type AuthService struct {
-	db *database.DatabaseService
-}
-
-type NotificationService struct {
-	db *database.DatabaseService
-	tg *telegram.TelegramService
-	e  *email.EmailService
-}
-
-func InitAuthService() *AuthService {
-	return &AuthService{
-		db: database.InitDatabaseService(),
-	}
-}
-
-func InitNotificationService() *NotificationService {
-	return &NotificationService{
-		db: database.InitDatabaseService(),
-		tg: telegram.NewTelegramService(),
-		e:  email.NewEmailService(),
-	}
-}
-
-func InitController() {
-
-}
 
 // Registration -> sign a new client
 func (a *AuthService) Registration(c *fiber.Ctx) error {
@@ -54,7 +18,7 @@ func (a *AuthService) Registration(c *fiber.Ctx) error {
 
 	err := c.BodyParser(&dto)
 	if err != nil {
-		excepriton.HandleAnError("Registration requestDto parser failed with error:" + err.Error())
+		exceptions.HandleAnError("Registration requestDto parser failed with error:" + err.Error())
 		c.Status(500)
 		return err
 	}
@@ -96,7 +60,7 @@ func (n *NotificationService) SendMessage(c *fiber.Ctx) error {
 
 	err = c.BodyParser(dto)
 	if err != nil {
-		excepriton.HandleAnError("SendMessage bodyparser got an error: " + err.Error())
+		exceptions.HandleAnError("SendMessage bodyparser got an error: " + err.Error())
 		c.Status(417)
 		return err
 	}
@@ -131,7 +95,7 @@ func (n *NotificationService) SendMessage(c *fiber.Ctx) error {
 	// 	return err
 	// }
 	default:
-		excepriton.HandleAnError("Received wrong service type.")
+		exceptions.HandleAnError("Received wrong service type.")
 		c.Status(400)
 		return err
 	}
@@ -159,7 +123,7 @@ func (n *NotificationService) HandleError(c *fiber.Ctx) error {
 
 	decodedMsg, err := url.QueryUnescape(ctx)
 	if err != nil {
-		excepriton.HandleAnError("Error decoding URL:" + err.Error())
+		exceptions.HandleAnError("Error decoding URL:" + err.Error())
 		c.Status(417)
 		return err
 	}

@@ -1,8 +1,8 @@
 package email
 
 import (
-	"notification-api/excepriton"
-	"notification-api/service/telegram"
+	"notification-api/internal/service/telegram"
+	"notification-api/pkg/exceptions"
 
 	"gopkg.in/gomail.v2"
 )
@@ -38,7 +38,7 @@ func (s *EmailService) sendMessageViaEmail(msg *gomail.Message) error {
 	dialer := gomail.NewDialer(s.opts.host, s.opts.port, s.opts.username, s.opts.password)
 	err := dialer.DialAndSend(msg)
 	if err != nil {
-		excepriton.HandleAnError("email handler got an error: " + err.Error())
+		exceptions.HandleAnError("email handler got an error: " + err.Error())
 		s.tg.SendErrorMessage("email handler got an error.")
 	}
 	return err

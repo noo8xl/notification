@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"notification-api/excepriton"
-	"notification-api/helpers"
-	"notification-api/models"
+	"notification-api/pkg/exceptions"
+	"notification-api/pkg/models"
+	"notification-api/pkg/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,19 +16,17 @@ import (
 // SignNewClient -> prepare and save registration data of a new client
 func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error {
 
-	s = initDatabaseConnection()
 	candidate := new(models.CompanyList)
 	clientDetails := new(models.CompanyDetails)
 	filter := bson.D{{Key: "companyDomain", Value: dto.DomainName}}
 	doc := models.CompanyList{CompanyDomain: dto.DomainName}
 
-	userHashKey := helpers.CreateClientKey(38)
+	userHashKey := utils.CreateClientKey(38)
 	ctx := context.TODO()
 
 	db := s.db.Database(s.name)
 	baseCollection := db.Collection("CompanyList")
 	detailsCollection := db.Collection("CompanyDetails")
-	defer s.db.Disconnect(ctx)
 
 	cand := baseCollection.FindOne(ctx, filter)
 	if cand != nil {
@@ -41,7 +39,7 @@ func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error
 
 	result, err := baseCollection.InsertOne(ctx, &doc)
 	if err != nil {
-		excepriton.HandleAnError("db insertion err: " + err.Error())
+		exceptions.HandleAnError("db insertion err: " + err.Error())
 		return err
 	}
 
@@ -53,7 +51,7 @@ func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error
 
 	_, err = detailsCollection.InsertOne(ctx, &clientDetails)
 	if err != nil {
-		excepriton.HandleAnError("db insertion err: " + err.Error())
+		exceptions.HandleAnError("db insertion err: " + err.Error())
 		return err
 	}
 	return nil
@@ -62,22 +60,20 @@ func (s *DatabaseService) SignNewClient(dto *models.ClientRegistrationDto) error
 // GetAccessToken -> get client access token for middleware
 func (s *DatabaseService) GetAccessToken(d string) (string, error) {
 
-	s = initDatabaseConnection()
 	var result *models.CompanyDetails
 
 	db := s.db.Database(s.name)
 	collection := db.Collection("CompanyDetails")
 	filter := bson.D{{Key: "domainName", Value: d}}
 	ctx := context.TODO()
-	defer s.db.Disconnect(ctx)
 
 	err := collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			excepriton.HandleAnError("Not found err: " + err.Error())
+			exceptions.HandleAnError("Not found err: " + err.Error())
 			return "", err
 		}
-		excepriton.HandleAnError("GetAccessToken func err: " + err.Error())
+		exceptions.HandleAnError("GetAccessToken func err: " + err.Error())
 		return "", err
 	}
 
@@ -87,15 +83,13 @@ func (s *DatabaseService) GetAccessToken(d string) (string, error) {
 // SaveHistory -> save notification details (s -> service)
 func (s *DatabaseService) SaveToTheHistory(item *models.NotificationHistory) error {
 
-	s = initDatabaseConnection()
 	db := s.db.Database(s.name)
 	collection := db.Collection("CompanyDetails")
 	ctx := context.TODO()
-	defer s.db.Disconnect(ctx)
 
 	_, err := collection.InsertOne(ctx, &item)
 	if err != nil {
-		excepriton.HandleAnError("save notification history was failed: " + err.Error())
+		exceptions.HandleAnError("save notification history was failed: " + err.Error())
 		return err
 	}
 	return nil

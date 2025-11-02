@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	controller "notification-api/controllers"
+	handlers "notification-api/internal/handlers/http/v1"
 
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -21,14 +21,14 @@ import (
 // api/v2 - > will provide another type of notifications
 
 type appController struct {
-	n controller.NotificationService
-	a controller.AuthService
+	n handlers.NotificationService
+	a handlers.AuthService
 }
 
 func InitController() *appController {
 	return &appController{
-		n: *controller.InitNotificationService(),
-		a: *controller.InitAuthService(),
+		n: *handlers.InitNotificationService(),
+		a: *handlers.InitAuthService(),
 	}
 }
 

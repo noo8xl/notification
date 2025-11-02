@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"notification-api/excepriton"
+	"notification-api/pkg/exceptions"
 )
 
 // SendSignUpData -> send auth data to the main client API
@@ -16,7 +16,7 @@ func SendSignUpData(dto any) error {
 
 	body, err := json.Marshal(&dto)
 	if err != nil {
-		excepriton.HandleAnError("unmarshal err:" + err.Error())
+		exceptions.HandleAnError("unmarshal err:" + err.Error())
 		return err
 	}
 
@@ -24,7 +24,7 @@ func SendSignUpData(dto any) error {
 
 	req, err := http.NewRequest(http.MethodPost, requestURL, reader)
 	if err != nil {
-		excepriton.HandleAnError("creation a request was failed: " + err.Error())
+		exceptions.HandleAnError("creation a request was failed: " + err.Error())
 		return err
 	}
 
@@ -33,7 +33,7 @@ func SendSignUpData(dto any) error {
 
 	res, err := client.Do(req)
 	if err != nil || res.StatusCode != 201 {
-		excepriton.HandleAnError("error making http request: " + err.Error())
+		exceptions.HandleAnError("error making http request: " + err.Error())
 		return err
 	}
 
